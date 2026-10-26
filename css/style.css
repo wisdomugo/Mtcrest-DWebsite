@@ -102,7 +102,7 @@ ul{margin:0;padding:0;list-style:none}
 .sec--inverse{background:var(--bg-inverse);color:var(--text-inverse)}
 .sec--inverse h2{color:var(--text-inverse)}
 .sec__head{margin-bottom:var(--space-6)}
-.sec__lead{margin-top:var(--space-3);font-size:var(--fs-lg);color:var(--text-secondary);max-width:60ch}
+.sec__lead{margin-top:var(--space-3);font-size:clamp(1rem,.93rem + .35vw,var(--fs-lg));color:var(--text-secondary);max-width:60ch}
 .sec--inverse .sec__lead{color:var(--brand-100)}
 .grid{display:grid;gap:var(--space-5)}
 .g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,1fr)}
@@ -295,7 +295,9 @@ p a:hover{color:var(--text-link-hover)}
  -webkit-backdrop-filter:blur(16px);border:1px solid rgba(183,42,38,.20);
  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
  padding:var(--space-5) var(--space-4);max-width:600px}
-.hero h1{font-size:clamp(1.5rem,1.02rem + 2.4vw,var(--fs-4xl))}
+/* 21px at 320, 23px at 390, ~36px on a tablet, full size from about 1180.
+   The global --fs-4xl floor is 28px, which is too loud for a phone card. */
+.hero h1{font-size:clamp(1.3125rem,.66rem + 3.26vw,var(--fs-4xl))}
 .hero .hero__sub{font-size:clamp(.9375rem,.86rem + .4vw,var(--fs-lg))}
 .hero .cta{display:grid;gap:var(--space-3)}
 @media(min-width:420px){.hero .cta{grid-template-columns:1fr 1fr;align-items:start}}
@@ -580,7 +582,7 @@ legend{font-weight:500;margin-bottom:var(--space-2);padding:0}
  padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-5)}
 .kicker{font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
  text-transform:uppercase;color:var(--ink-nav)}
-.sen__h{margin-top:var(--space-2);font-size:var(--fs-xl);line-height:1.2}
+.sen__h{margin-top:var(--space-2);font-size:clamp(1.1875rem,1.05rem + .66vw,var(--fs-xl));line-height:1.2}
 .sen__p{margin-top:var(--space-3);color:var(--text-secondary);max-width:62ch}
 
 
@@ -777,10 +779,10 @@ legend{font-weight:500;margin-bottom:var(--space-2);padding:0}
 .quote{margin:-36px 0 0 16px;background:var(--neutral-0);
  border:1px solid var(--border-default);border-radius:12px;box-shadow:var(--shadow-md);
  padding:var(--space-5)}
-.quote__m{display:block;font-size:46px;line-height:.75;font-weight:700;
+.quote__m{display:block;font-size:clamp(2rem,1.45rem + 2.75vw,46px);line-height:.75;font-weight:700;
  color:var(--rail)}
 .quote__t{margin:var(--space-4) 0 0;padding:0;border:0;quotes:none}
-.quote__t p{font-size:var(--fs-lg);line-height:1.5;color:var(--text-primary)}
+.quote__t p{font-size:clamp(1rem,.93rem + .35vw,var(--fs-lg));line-height:1.5;color:var(--text-primary)}
 .quote__c{display:block;margin-top:var(--space-5);padding-top:var(--space-5);
  border-top:1px solid var(--border-default)}
 .quote__n{display:block;font-weight:700;color:var(--ink-nav)}
@@ -819,13 +821,21 @@ legend{font-weight:500;margin-bottom:var(--space-2);padding:0}
    breakpoint they carry the container gutter themselves */
 .zz{display:grid;gap:var(--space-7);list-style:none;margin:0;
  padding:0 var(--margin)}
-.zz__i{display:grid;grid-template-columns:96px minmax(0,1fr);
- grid-template-areas:"pic head" "body body";gap:var(--space-4);align-items:start}
-.zz__i--r{grid-template-columns:minmax(0,1fr) 96px;
- grid-template-areas:"head pic" "body body"}
-.zz__ph{grid-area:pic;position:relative;aspect-ratio:1;align-self:start;
+/* THREE TIERS, not two. This used to go straight from a 96x96 thumbnail to the
+   full-bleed desktop row at 960, so every width in between — large phones,
+   every tablet — got the thumbnail and the picture read as an afterthought.
+     < 560   picture full width above the copy. A true 50/50 here would leave
+             144px a side at 320, which is about 18 characters a line, so the
+             picture takes the full measure instead of a token slice.
+     560-959 the 50/50 the design intends, contained rather than bled.
+     >= 960  unchanged: bleed, fade mask and centred copy. */
+.zz__i{display:grid;grid-template-columns:minmax(0,1fr);
+ grid-template-areas:"pic" "head" "body";gap:var(--space-4);align-items:start}
+.zz__i--r{grid-template-columns:minmax(0,1fr);
+ grid-template-areas:"pic" "head" "body"}
+.zz__ph{grid-area:pic;position:relative;aspect-ratio:16/9;align-self:start;
  display:flex;align-items:center;justify-content:center;text-align:center;
- overflow:hidden}
+ overflow:hidden;border-radius:var(--radius-lg)}
 .zz__img{position:absolute;inset:0;display:block;width:100%;height:100%;
  object-fit:cover;background:var(--ph-bg)}
 .zz__cap{position:relative;z-index:1;padding:var(--space-3)}
@@ -845,6 +855,13 @@ legend{font-weight:500;margin-bottom:var(--space-2);padding:0}
  .zz__more{text-align:center}
  .zz__more .btn{width:auto}
 }
+@media(min-width:560px) and (max-width:959.98px){
+ .zz__i{grid-template-columns:1fr 1fr;grid-template-areas:"pic head" "pic body";
+  gap:var(--space-5);align-items:center}
+ .zz__i--r{grid-template-areas:"head pic" "body pic"}
+ .zz__ph{aspect-ratio:4/3;align-self:stretch}
+ .zz__h{margin-top:0}
+}
 @media(min-width:960px){
  /* the gutter that lines the outer text edge up with every other section */
  .sec--bleed{--page-gutter:calc(max(0px,(100vw - var(--c-content)))/2 + var(--margin))}
@@ -856,7 +873,7 @@ legend{font-weight:500;margin-bottom:var(--space-2);padding:0}
   grid-template-areas:"pic ." "pic head" "pic body" "pic .";
   gap:0;min-height:380px;align-items:stretch}
  .zz__i--r{grid-template-areas:". pic" "head pic" "body pic" ". pic"}
- .zz__ph{grid-area:pic;aspect-ratio:auto;align-self:stretch;
+ .zz__ph{grid-area:pic;aspect-ratio:auto;align-self:stretch;border-radius:0;
   justify-content:flex-start}
  .zz__i--r .zz__ph{justify-content:flex-end}
  .zz__img{-webkit-mask-image:linear-gradient(to right,#000 50%,transparent 100%);
