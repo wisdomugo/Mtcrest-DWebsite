@@ -148,12 +148,28 @@ ul{margin:0;padding:0;list-style:none}
  color:var(--text-primary);text-decoration:none;font-size:var(--fs-base);border-radius:var(--radius-sm);cursor:pointer}
 .nav a[aria-current=page]{font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
 .nav summary{list-style:none}.nav summary::-webkit-details-marker{display:none}
-.nav summary::after{content:"";width:8px;height:8px;margin-left:6px;border-right:2px solid currentColor;
+/* A top-level item with a submenu is TWO controls, not one: the label is a real
+   link to the section's page, and the chevron beside it is a separate toggle.
+   The WAI-ARIA disclosure-with-top-level-links pattern. Making the label do both
+   cannot work — the click navigates away, destroying the menu it just opened,
+   and on touch there is no hover to fall back on.
+   <details> rather than button+script so the submenu still opens with no JS. */
+.nav__i{display:flex;align-items:center;position:relative}
+.dd{display:flex;align-items:center}
+.nav__i>a{padding-right:var(--space-1)}
+.dd__t{display:flex;align-items:center;justify-content:center;
+ min-width:var(--target);min-height:var(--target);border-radius:var(--radius-sm);
+ cursor:pointer;list-style:none;color:var(--text-primary)}
+.dd__t::-webkit-details-marker{display:none}
+.dd__t::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;
  border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px)}
-.nav details[open]>summary::after{transform:rotate(225deg) translateY(2px)}
-@media(min-width:960px){.nav details{position:relative}
- .nav details>ul{position:absolute;top:100%;left:0;min-width:240px;background:var(--bg-page);
- border:var(--bw) solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:var(--space-2);z-index:60}}
+.dd[open]>.dd__t::after{transform:rotate(225deg) translateY(2px)}
+.dd__t:hover{background:var(--bg-surface)}
+.dd__t:focus-visible{outline:var(--bw-focus) solid var(--border-focus);outline-offset:2px}
+@media(min-width:960px){
+ .dd>ul{position:absolute;top:100%;left:0;min-width:240px;background:var(--bg-page);
+  border:var(--bw) solid var(--border-default);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-md);padding:var(--space-2);z-index:60}}
 .menu{margin-left:auto}
 @media(min-width:960px){.menu{display:none}}
 .menu>summary{display:flex;align-items:center;gap:var(--space-2);min-height:var(--target);min-width:var(--target);
@@ -165,6 +181,21 @@ ul{margin:0;padding:0;list-style:none}
 .menu .mnav a,.menu .mnav summary{display:flex;align-items:center;min-height:var(--target);
  padding:0 var(--margin);color:var(--text-primary);text-decoration:none;cursor:pointer;list-style:none}
 .menu .mnav summary::-webkit-details-marker{display:none}
+/* same split in the drawer: the row is the link, the chevron on the right is
+   its own target, both at the full 44px the rest of the site holds to */
+.mnav__i{position:relative}
+.mnav__i>a{padding-right:calc(var(--margin) + var(--target))}
+/* the toggle is lifted out of the flow and parked over the right end of the
+   link row, so <details> keeps its native behaviour and the submenu below it
+   still spans the full drawer width */
+.mdd__t{position:absolute;top:0;right:0;display:flex;align-items:center;
+ justify-content:center;width:var(--target);height:var(--target);
+ margin-right:var(--margin);cursor:pointer;list-style:none;color:var(--text-primary)}
+.mdd__t::-webkit-details-marker{display:none}
+.mdd__t::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;
+ border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px)}
+.mdd[open]>.mdd__t::after{transform:rotate(225deg) translateY(2px)}
+.mdd__t:focus-visible{outline:var(--bw-focus) solid var(--border-focus);outline-offset:-2px}
 .menu .mnav details>ul a{padding-left:calc(var(--margin) + var(--space-5));color:var(--text-secondary);font-size:var(--fs-xs)}
 .menu .mnav>li+li{border-top:var(--bw) solid var(--neutral-100)}
 
@@ -247,15 +278,31 @@ p a:hover{color:var(--text-link-hover)}
  Item 12 made 60% a structural floor to protect the next CMS upload, which
  nobody will measure. ===== */
 /* ===== hero ===== */
-.hero{position:relative}
-.hero__img{aspect-ratio:4/3;background:linear-gradient(135deg,var(--brand-700),var(--navy-800));
+/* The card overlays the photograph at EVERY width, not only from 960 up.
+   Below that it used to drop into normal flow and the hero came apart into a
+   picture with a stack of text under it. The card is 90% white with dark text
+   inside, so nothing legible ever sits on the photograph itself — which is
+   exactly why the overlay is safe to run down to 320px. Only the scale changes:
+   padding, headline and the statistics strip all step down. */
+.hero{position:relative;display:grid;align-items:center;
+ min-height:clamp(430px,116vw,560px)}
+.hero__img{position:absolute;inset:0;aspect-ratio:auto;height:100%;border-radius:0;
+ background:linear-gradient(135deg,var(--brand-700),var(--navy-800));
  display:grid;place-items:center;color:rgba(255,255,255,.55);font-size:var(--fs-xs);text-align:center;padding:var(--space-4)}
-.hero__body{padding-block:var(--space-6) var(--space-7)}
+.hero__scrim{display:none}
+.hero__body{position:relative;padding-block:var(--space-6)}
+.hero__card{background:rgba(255,255,255,.90);backdrop-filter:blur(16px);
+ -webkit-backdrop-filter:blur(16px);border:1px solid rgba(183,42,38,.20);
+ border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+ padding:var(--space-5) var(--space-4);max-width:600px}
+.hero h1{font-size:clamp(1.5rem,1.02rem + 2.4vw,var(--fs-4xl))}
+.hero .hero__sub{font-size:clamp(.9375rem,.86rem + .4vw,var(--fs-lg))}
+.hero .cta{display:grid;gap:var(--space-3)}
+@media(min-width:420px){.hero .cta{grid-template-columns:1fr 1fr;align-items:start}}
 .hero__sub{margin-top:var(--space-4);font-size:var(--fs-lg);color:var(--text-secondary);max-width:38ch}
 .hero__cap{margin-top:var(--space-2);font-size:var(--fs-xs);color:var(--text-muted)}
 @media(min-width:960px){
- .hero{display:grid;min-height:560px;align-items:center}
- .hero__img{position:absolute;inset:0;aspect-ratio:auto;height:100%;border-radius:0}
+ .hero{min-height:560px}
  /* THE CARD. Adopted from the previous Mountain Crest design at Wisdom's request,
     22 Oct. It replaces the scrim rather than joining it: the 60% scrim floor existed
     to make WHITE text legible over an unknown photograph, and with dark text inside
@@ -264,12 +311,8 @@ p a:hover{color:var(--text-link-hover)}
     this photograph is 3.24:1 and FAILS. Measured worst 1%: .72 = 3.24:1, .80 = 3.97:1,
     .88 = 4.80:1, .94 = 5.48:1. Set to .90. The calculation assumes NO backdrop blur,
     which is the worst case and the fallback where blur is unsupported. */
- .hero__scrim{display:none}
- .hero__body{position:relative;padding-block:var(--space-8)}
- .hero__card{background:rgba(255,255,255,.90);backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);border:1px solid rgba(183,42,38,.20);
-  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
-  padding:var(--space-7) var(--space-6);max-width:600px}
+ .hero__body{padding-block:var(--space-8)}
+ .hero__card{padding:var(--space-7) var(--space-6)}
  /* MEASURED 23 Oct: the headline sets in 3 lines at every card width from 560
     to 700px. What forced a 4th line was this element's own 15ch cap (~368px)
     inside a 496px card, not the card. Cap removed; the card widened to 600px
@@ -341,25 +384,29 @@ p a:hover{color:var(--text-link-hover)}
  Figures Register. The strip uses the same frosted treatment as the card, which
  is what lets the figures stay in accent-500: on a DARK strip accent-500 measures
  2.37:1 against navy-700 and would have had to become white or accent-300. */
-.hstat{border-top:1px solid var(--border-default);margin-top:var(--space-6);padding-top:var(--space-5)}
-.hstat ul{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-5) var(--space-4)}
-/* five figures do not divide by two. The fifth spans the row rather than
-   dangling in the left cell, which also gives the pass rate -- the figure
-   parents weigh most -- its own line at the narrowest width. */
-.hstat li:nth-child(5){grid-column:1/-1}
-@media(min-width:640px){.hstat ul{grid-template-columns:repeat(3,1fr)}
- .hstat li:nth-child(5){grid-column:auto}}
-.hstat .stat__n{font-size:var(--fs-2xl)}
-.hstat .stat__l{font-size:var(--fs-xs);color:var(--text-muted)}
+/* The strip is attached to the foot of the hero at every width now, and all
+   five figures hold ONE row down to 320px. They no longer reflow to 2-up and
+   3-up; instead the figure and its label scale with the viewport. At 320 the
+   columns are about 57px, which is tight — the labels wrap to two or three
+   lines there and the row is dense. It is legible, but 320 is the width where
+   this layout is working hardest. */
+.hstat{border:0;margin:0;padding:0}
+.hstat ul{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-2)}
+.hstat .stat__n{font-size:clamp(.9375rem,.62rem + 1.6vw,var(--fs-2xl))}
+.hstat .stat__l{font-size:clamp(.5625rem,.47rem + .42vw,var(--fs-xs));
+ color:var(--text-muted);line-height:1.25}
+.hero__stats{position:absolute;left:0;right:0;bottom:0;z-index:1;
+ background:rgba(255,255,255,.90);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+ border-top:1px solid rgba(183,42,38,.20)}
+.hero__stats .wrap{padding-block:var(--space-3)}
+.hero{padding-bottom:92px}
+@media(min-width:640px){.hero{padding-bottom:108px}
+ .hero__stats .wrap{padding-block:var(--space-4)}}
 @media(min-width:960px){
- .hero__stats{position:absolute;left:0;right:0;bottom:0;z-index:1;
-  background:rgba(255,255,255,.90);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-top:1px solid rgba(183,42,38,.20)}
  .hero__stats .wrap{padding-block:var(--space-5)}
- .hero__stats ul{grid-template-columns:repeat(5,1fr);gap:var(--space-5)}
+ .hero__stats ul{gap:var(--space-5)}
  .hero__stats .stat__n{font-size:var(--fs-3xl)}
  .hero{padding-bottom:132px}
- .hstat{border:0;margin:0;padding:0}
 }
 
 
@@ -368,8 +415,8 @@ p a:hover{color:var(--text-link-hover)}
    them and a vertical rule would land at the start of a wrapped row. */
 .hstat li{border-radius:var(--radius-md);transition:background var(--dur-fast) var(--ease)}
 .hstat li:hover{background:rgba(183,42,38,.06)}
-@media(min-width:960px){
- .hero__stats li{position:relative;padding:var(--space-2) var(--space-5)}
+@media(min-width:640px){
+ .hero__stats li{position:relative;padding:var(--space-2) var(--space-4)}
  .hero__stats li:first-child{padding-left:var(--space-2)}
  .hero__stats li+li::before{content:"";position:absolute;left:0;top:50%;
   transform:translateY(-50%);width:1px;height:64%;background:var(--border-default)}
@@ -380,11 +427,9 @@ p a:hover{color:var(--text-link-hover)}
 .pic{display:block;width:100%}
 .pic img{display:block;width:100%;height:auto}
 .card>.pic img{border-radius:var(--radius-lg) var(--radius-lg) 0 0}
-.hero>.pic{position:static}
-.hero>.pic img{width:100%;height:auto;display:block}
+.hero>.pic{position:absolute;inset:0;height:100%}
+.hero>.pic img{width:100%;height:100%;object-fit:cover;object-position:54% 58%;display:block}
 @media(min-width:960px){
- .hero>.pic{position:absolute;inset:0;height:100%}
- .hero>.pic img{height:100%;object-fit:cover;object-position:54% 58%}
 }
 .hero--intro>.pic img{border-radius:var(--radius-lg)}
 @media(min-width:960px){.hero--intro>.pic{position:static;height:auto}
