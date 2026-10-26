@@ -1,0 +1,2337 @@
+/* ===========================================================================
+   MOUNTAIN CREST SCHOOLS — one stylesheet for all fifteen pages
+   ---------------------------------------------------------------------------
+   LAYER 1  SHARED   @font-face, design tokens, reset, utilities, and every
+                     component used by more than one page. Written once.
+   LAYER 2  PER PAGE each page's own rules, scoped to its body class so they
+                     cannot reach another page. Every <body> carries exactly
+                     one p-* class.
+
+   Not minified on purpose: the comments carry decisions that are expensive to
+   rediscover. Minify on the way to the server, not here.
+   =========================================================================== */
+
+/* ===========================================================================
+   LAYER 1 — SHARED
+   =========================================================================== */
+
+/* ===== MtCrest build spike — Item 7 tokens, verbatim values ===== */
+:root{
+--brand-50:#EFF5FA;--brand-100:#D9E8F3;--brand-200:#B6D1E6;--brand-500:#5A92C0;--brand-700:#365B7B;--brand-800:#284358;
+--navy-500:#432F8A;--navy-600:#36237A;--navy-700:#29166C;--navy-800:#1F1052;--navy-900:#150B38;
+--accent-50:#FBEEED;--accent-300:#DD827E;--accent-400:#CC5450;--accent-500:#B72A26;--accent-700:#801B19;
+--neutral-0:#FFF;--neutral-50:#F8F8F7;--neutral-100:#F0F0EF;--neutral-200:#E3E3E1;--neutral-300:#CCCCC9;
+--neutral-450:#8A8A87;--neutral-500:#7A7A77;--neutral-600:#5C5C5A;--neutral-700:#454543;--neutral-900:#1A1A19;
+--success-100:#E3F3EA;--success-700:#14562F;--danger-100:#F8E4E8;--danger-700:#7A0B22;--info-100:#E3EFF8;--info-700:#144566;
+/* semantic */
+--text-primary:var(--neutral-900);--text-secondary:var(--neutral-700);--text-muted:var(--neutral-600);
+--text-inverse:var(--neutral-0);--text-on-action:var(--neutral-0);--text-link:var(--brand-700);--text-link-hover:var(--brand-800);
+--text-display-accent:var(--accent-500);
+--bg-page:var(--neutral-0);--bg-surface:var(--neutral-50);--bg-surface-raised:var(--neutral-0);--bg-inverse:var(--navy-700);
+--bg-brand-subtle:var(--brand-50);--bg-accent-subtle:var(--accent-50);
+--scrim-overlay:rgba(21,11,56,.60);
+--border-default:var(--neutral-300);--border-strong:var(--neutral-450);--border-focus:var(--navy-500);--border-focus-inverse:var(--neutral-0);
+--action-primary:var(--navy-700);--action-primary-hover:var(--navy-600);--action-primary-pressed:var(--navy-800);
+--action-secondary-label:var(--navy-700);
+/* scales */
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;--space-8:64px;--space-9:96px;
+--fs-xs:.8125rem;--fs-base:1rem;--fs-lg:1.25rem;--fs-xl:1.5625rem;--fs-2xl:1.9375rem;--fs-3xl:2.4375rem;
+--fs-4xl:clamp(1.75rem,1.2rem + 2.8vw,3.0625rem);
+--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+--bw:1px;--bw-focus:2px;
+--shadow-sm:0 1px 2px rgba(26,26,25,.06),0 2px 6px rgba(26,26,25,.05);
+--shadow-md:0 2px 6px rgba(26,26,25,.08),0 8px 20px rgba(26,26,25,.10);
+--target:44px;--dur-fast:120ms;--dur-base:200ms;--ease:cubic-bezier(.2,0,.2,1);
+--c-prose:640px;--c-content:1280px;--c-wide:1440px;
+--gutter:var(--space-4);--margin:var(--space-4);--sticky:64px;
+}
+@media(min-width:640px){:root{--gutter:var(--space-5);--margin:var(--space-5)}}
+@media(min-width:960px){:root{--gutter:var(--space-5);--margin:var(--space-6);--sticky:80px}}
+@media(min-width:1280px){:root{--gutter:var(--space-6)}}
+
+
+/* ===== typeface — Source Sans 3, the Item 12 §3c selection =====
+   Variable, axis clipped to the three declared weights' range (400-700),
+   subset to the 121-glyph tier B set measured from the site's own copy.
+   14,708 bytes. Self-hosted: a third-party font host would add a DNS lookup,
+   a TCP connection and a TLS handshake before any text could render. */
+@font-face{
+ font-family:"Source Sans 3";
+ src:url("../fonts/SourceSans3-subset.woff2") format("woff2-variations");
+ font-weight:400 700; font-style:normal; font-display:swap;
+ unicode-range:U+0020-007E,U+00A9,U+00B7,U+00D7,U+00E8,U+2013,U+2014,U+2018,U+2019,U+201C,U+201D,U+2026,U+20A6;
+}
+/* Fallback metrics overridden so the swap does not shift layout.
+   Computed against Arial: Source Sans 3 averages 0.4920em per character,
+   Arial 0.5778em, so size-adjust = 85.16%. Ascent/descent follow.
+   This is the project's last remaining source of CLS (Item 12 §3e). */
+@font-face{
+ font-family:"SS3 fallback";
+ src:local("Arial"),local("Helvetica Neue"),local("Liberation Sans");
+ size-adjust:85.16%; ascent-override:120.24%; descent-override:46.97%; line-gap-override:0%;
+}
+
+/* ===== base ===== */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:var(--sticky)}            /* Item 9 R5.1 + Item 8 S3 — both sticky elements */
+body{margin:0;background:var(--bg-page);color:var(--text-primary);
+ font:400 var(--fs-base)/1.5 "Source Sans 3","SS3 fallback",system-ui,sans-serif;
+ -webkit-text-size-adjust:100%}
+h1,h2,h3{margin:0;font-weight:700;color:var(--text-primary)}
+h1{font-size:var(--fs-4xl);line-height:1.1;letter-spacing:-.01em}
+h2{font-size:clamp(1.375rem,1.19rem + 0.93vw,var(--fs-2xl));line-height:1.25}
+/* The phone mockup sets the section heading at about 22px against the same
+   16px body as desktop: line pitch measures 24px in BOTH mockups, so only the
+   heading scales. 1.375rem at 320 rising to --fs-2xl by about 1280. */
+h3{font-size:var(--fs-lg);line-height:1.45;font-weight:500}
+p{margin:0}
+img,svg{display:block;max-width:100%}
+ul{margin:0;padding:0;list-style:none}
+:focus-visible{outline:var(--bw-focus) solid var(--border-focus);outline-offset:2px;border-radius:var(--radius-sm)}
+.inv :focus-visible{outline-color:var(--border-focus-inverse)}   /* Item 11 finding 4a */
+@media(prefers-reduced-motion:reduce){*{transition-duration:0ms!important;animation:none!important}}
+
+/* ===== layout ===== */
+.wrap{width:100%;max-width:var(--c-content);margin-inline:auto;padding-inline:var(--margin)}
+.prose{max-width:var(--c-prose)}
+.sec{padding-block:var(--space-7)}
+@media(min-width:640px){.sec{padding-block:var(--space-8)}}
+@media(min-width:960px){.sec{padding-block:var(--space-9)}}
+.sec--surface{background:var(--bg-surface)}
+.sec--brand{background:var(--bg-brand-subtle)}
+.sec--inverse{background:var(--bg-inverse);color:var(--text-inverse)}
+.sec--inverse h2{color:var(--text-inverse)}
+.sec__head{margin-bottom:var(--space-6)}
+.sec__lead{margin-top:var(--space-3);font-size:var(--fs-lg);color:var(--text-secondary);max-width:60ch}
+.sec--inverse .sec__lead{color:var(--brand-100)}
+.grid{display:grid;gap:var(--space-5)}
+.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,1fr)}
+@media(min-width:640px){.g2,.g3{grid-template-columns:repeat(2,1fr)}.g4{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:960px){.g3{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1280px){.g3--4up{grid-template-columns:repeat(4,1fr)}}
+
+/* ===== skip link ===== */
+.skip{position:absolute;left:-9999px;top:0;z-index:100}
+.skip:focus{left:var(--space-3);top:var(--space-3);padding:var(--space-3) var(--space-4);
+ background:var(--action-primary);color:var(--text-on-action);border-radius:var(--radius-md);text-decoration:none}
+
+/* ===== utility bar ===== */
+.util{background:var(--bg-surface);border-bottom:var(--bw) solid var(--border-default);font-size:var(--fs-xs)}
+.util ul{display:flex;gap:var(--space-4);align-items:center;flex-wrap:wrap;min-height:40px}
+.util a{color:var(--text-secondary);text-decoration:none;display:flex;align-items:center;min-height:var(--target);padding-inline:2px}
+.util a:hover{color:var(--text-link-hover);text-decoration:underline}
+.util li.opt{display:none}
+@media(min-width:640px){.util li.opt{display:block}}
+
+/* ===== header + nav ===== */
+.hdr{position:sticky;top:0;z-index:50;background:var(--bg-page);border-bottom:var(--bw) solid var(--border-default)}
+.hdr__in{display:flex;align-items:center;gap:var(--space-4);min-height:64px}
+@media(min-width:960px){.hdr__in{min-height:80px}}
+.logo{display:flex;align-items:center;gap:var(--space-2);text-decoration:none;color:var(--text-primary);
+ font-weight:700;font-size:var(--fs-base);margin-right:auto;min-height:var(--target);white-space:nowrap}
+.logo picture,.logo img{width:32px;height:32px;flex:none;display:block}
+/* SPIKE FINDING 1 — at 320px the wordmark, the CTA and the menu control cannot share 288px.
+   Measured: 150 + 148 + 85 + gaps = 415px against 288px available.
+   The wordmark yields; the CTA does not, because sub-step 5 forbids putting the
+   primary action behind the menu, and Item 4 fixes the label wording. */
+.logo__name{display:none}
+/* "Mountain Crest Schools" needs ~461px of content beside the CTA and the menu
+   control; below that the badge stands alone and the accessible name carries
+   the full school name. Was 420px when the wordmark read "Mountain Crest". */
+@media(min-width:560px){.logo__name{display:inline}}
+.hdr .btn{white-space:nowrap;padding-inline:var(--space-4)}
+.hdr__in{gap:var(--space-2)}
+@media(min-width:640px){.hdr .btn{padding-inline:var(--space-5)}.hdr__in{gap:var(--space-4)}}
+.nav{display:none}
+@media(min-width:960px){.nav{display:block}.nav>ul{display:flex;gap:var(--space-2)}}
+.nav a,.nav summary{display:flex;align-items:center;min-height:var(--target);padding:0 var(--space-3);
+ color:var(--text-primary);text-decoration:none;font-size:var(--fs-base);border-radius:var(--radius-sm);cursor:pointer}
+.nav a[aria-current=page]{font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.nav summary{list-style:none}.nav summary::-webkit-details-marker{display:none}
+.nav summary::after{content:"";width:8px;height:8px;margin-left:6px;border-right:2px solid currentColor;
+ border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px)}
+.nav details[open]>summary::after{transform:rotate(225deg) translateY(2px)}
+@media(min-width:960px){.nav details{position:relative}
+ .nav details>ul{position:absolute;top:100%;left:0;min-width:240px;background:var(--bg-page);
+ border:var(--bw) solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:var(--space-2);z-index:60}}
+.menu{margin-left:auto}
+@media(min-width:960px){.menu{display:none}}
+.menu>summary{display:flex;align-items:center;gap:var(--space-2);min-height:var(--target);min-width:var(--target);
+ padding:0 var(--space-3);border:var(--bw) solid var(--border-strong);border-radius:var(--radius-md);
+ font-size:var(--fs-xs);cursor:pointer;list-style:none}
+.menu>summary::-webkit-details-marker{display:none}
+.menu[open]>div{position:absolute;left:0;right:0;top:100%;background:var(--bg-page);
+ border-bottom:var(--bw) solid var(--border-default);box-shadow:var(--shadow-md);padding:var(--space-4) 0;max-height:70vh;overflow:auto}
+.menu .mnav a,.menu .mnav summary{display:flex;align-items:center;min-height:var(--target);
+ padding:0 var(--margin);color:var(--text-primary);text-decoration:none;cursor:pointer;list-style:none}
+.menu .mnav summary::-webkit-details-marker{display:none}
+.menu .mnav details>ul a{padding-left:calc(var(--margin) + var(--space-5));color:var(--text-secondary);font-size:var(--fs-xs)}
+.menu .mnav>li+li{border-top:var(--bw) solid var(--neutral-100)}
+
+/* ===== section nav (second sticky) ===== */
+.snav{position:sticky;top:64px;z-index:40;background:var(--bg-page);border-bottom:var(--bw) solid var(--border-default)}
+@media(min-width:960px){.snav{top:80px}}
+.snav ul{display:flex;gap:var(--space-4);overflow-x:auto;min-height:48px;align-items:center;
+ font-size:var(--fs-xs);scrollbar-width:thin}
+.snav a{color:var(--text-secondary);text-decoration:none;white-space:nowrap;display:flex;align-items:center;min-height:var(--target)}
+.snav a[aria-current=true]{color:var(--text-primary);font-weight:700;text-decoration:underline;
+ text-decoration-thickness:2px;text-underline-offset:4px}
+
+/* ===== button ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);
+ min-height:48px;min-width:var(--target);padding:var(--space-3) var(--space-5);
+ font:500 var(--fs-base)/1.3 inherit;text-align:center;text-decoration:none;border-radius:var(--radius-md);
+ border:var(--bw) solid transparent;cursor:pointer;transition:background var(--dur-fast) var(--ease)}
+.btn--fill{background:var(--action-primary);color:var(--text-on-action)}
+.btn--fill:hover{background:var(--action-primary-hover)}
+.btn--fill:active{background:var(--action-primary-pressed)}
+.btn--out{background:transparent;color:var(--action-secondary-label);border-color:var(--action-secondary-label)}
+.btn--out:hover{background:var(--bg-surface)}
+.btn--text{background:none;color:var(--action-secondary-label);padding-inline:var(--space-2)}
+.btn--text:hover{text-decoration:underline}
+.btn--lg{min-height:56px;font-size:var(--fs-lg);padding:var(--space-4) var(--space-6)}
+.sec--inverse .btn--out{color:var(--text-inverse);border-color:var(--text-inverse)}
+.sec--inverse .btn--out:hover{background:rgba(255,255,255,.1)}
+.btn--block{width:100%}
+@media(min-width:640px){.btn--block{width:auto}}
+.cta{display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-6)}
+@media(min-width:640px){.cta{flex-direction:row;align-items:center;flex-wrap:wrap}}
+
+/* ===== link ===== */
+a{color:var(--text-link)}
+.prose a,p a{text-decoration:underline;text-underline-offset:2px}
+p a:hover{color:var(--text-link-hover)}
+.lnk{display:inline-flex;align-items:center;gap:var(--space-2);min-height:var(--target);
+ color:var(--text-link);font-weight:500;text-decoration:none}
+.lnk:hover{text-decoration:underline}
+.lnk::after{content:"\203A";font-size:1.1em}
+.sec--inverse a{color:var(--text-inverse)}
+
+/* ===== pill ===== */
+.pill{display:inline-block;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);
+ font-size:var(--fs-xs);font-weight:500;background:var(--neutral-100);color:var(--text-secondary)}
+.pill--brand{background:var(--brand-100);color:var(--brand-800)}
+
+/* ===== card ===== */
+.card{position:relative;display:flex;flex-direction:column;min-height:0;   /* min, never fixed — SC 1.4.12 */
+ background:var(--bg-surface-raised);border:var(--bw) solid var(--border-default);
+ border-radius:var(--radius-lg);overflow:visible;transition:background var(--dur-fast) var(--ease)}
+.card__body{padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)}
+.card__t{font-size:var(--fs-lg);font-weight:500;line-height:1.35}
+.card__t a{color:var(--text-link);text-decoration:none}
+.card__t a::after{content:"";position:absolute;inset:0;border-radius:var(--radius-lg)}  /* stretched link */
+.card:has(a:hover){background:var(--bg-surface);box-shadow:var(--shadow-sm)}
+.card:has(a:focus-visible){outline:var(--bw-focus) solid var(--border-focus);outline-offset:2px}
+.card__t a:focus-visible{outline:none}
+.card__m{font-size:var(--fs-xs);color:var(--text-muted)}
+.card p{color:var(--text-secondary);font-size:var(--fs-base)}
+.card--raised{box-shadow:var(--shadow-sm)}
+.ph{aspect-ratio:4/3;background:var(--bg-surface);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+ display:grid;place-items:center;color:var(--neutral-450);font-size:var(--fs-xs);text-align:center;padding:var(--space-3)}
+.ph--sq{aspect-ratio:1/1}.ph--wide{aspect-ratio:16/9}
+
+
+/* ===== HERO ART DIRECTION — derived from the photograph, not eyeballed =====
+ Measured on hero-wide-1400.jpg with a 32px local-standard-deviation detail map
+ and a YCrCb skin mask, which is what Item 5's brief meant by "copy sits on a
+ designated low-detail zone" and what nobody had ever computed.
+   detail by vertical tenth:  8.7 10.5  8.1 | 22.9 23.3 21.3 19.5 19.9 17.9 10.6
+   -> the quiet zone is the LEFT 30%; detail nearly triples at the 30% mark
+   -> left third: detail 10.1, skin 19.5%   right third: detail 16.6, skin 36.0%
+   -> copy goes LEFT. 27% less detail and 36% less skin than the right.
+   subject centre of mass (skin): x=54%, y=58%  ->  object-position 54% 58%
+ Contrast of white text over the copy zone WITH the 60% scrim, this photograph:
+   mean 11.54:1, worst 1% 7.30:1.  Item 12 predicted 4.92:1 for the worst case
+   a photograph can present; this frame is far easier than that.
+ Scrim opacity needed by THIS photograph: 45%. It stays at 60% anyway, because
+ Item 12 made 60% a structural floor to protect the next CMS upload, which
+ nobody will measure. ===== */
+/* ===== hero ===== */
+.hero{position:relative}
+.hero__img{aspect-ratio:4/3;background:linear-gradient(135deg,var(--brand-700),var(--navy-800));
+ display:grid;place-items:center;color:rgba(255,255,255,.55);font-size:var(--fs-xs);text-align:center;padding:var(--space-4)}
+.hero__body{padding-block:var(--space-6) var(--space-7)}
+.hero__sub{margin-top:var(--space-4);font-size:var(--fs-lg);color:var(--text-secondary);max-width:38ch}
+.hero__cap{margin-top:var(--space-2);font-size:var(--fs-xs);color:var(--text-muted)}
+@media(min-width:960px){
+ .hero{display:grid;min-height:560px;align-items:center}
+ .hero__img{position:absolute;inset:0;aspect-ratio:auto;height:100%;border-radius:0}
+ /* THE CARD. Adopted from the previous Mountain Crest design at Wisdom's request,
+    22 Oct. It replaces the scrim rather than joining it: the 60% scrim floor existed
+    to make WHITE text legible over an unknown photograph, and with dark text inside
+    a card nothing sits on the photograph at all. The image now shows at full strength.
+    Opacity is MEASURED, not copied. The old design used .72; at .72 accent-500 over
+    this photograph is 3.24:1 and FAILS. Measured worst 1%: .72 = 3.24:1, .80 = 3.97:1,
+    .88 = 4.80:1, .94 = 5.48:1. Set to .90. The calculation assumes NO backdrop blur,
+    which is the worst case and the fallback where blur is unsupported. */
+ .hero__scrim{display:none}
+ .hero__body{position:relative;padding-block:var(--space-8)}
+ .hero__card{background:rgba(255,255,255,.90);backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);border:1px solid rgba(183,42,38,.20);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+  padding:var(--space-7) var(--space-6);max-width:600px}
+ /* MEASURED 23 Oct: the headline sets in 3 lines at every card width from 560
+    to 700px. What forced a 4th line was this element's own 15ch cap (~368px)
+    inside a 496px card, not the card. Cap removed; the card widened to 600px
+    for a slightly easier measure, which still ends at 49.4% of the frame and
+    stays clear of the subject at 54%. Hero is ~54px shorter (one line at 49/1.1). */
+}
+.hero--intro .hero__img{aspect-ratio:16/9}
+@media(min-width:960px){.hero--intro{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);min-height:0;align-items:center}
+ .hero--intro .hero__img{position:static;aspect-ratio:16/9;height:auto;border-radius:var(--radius-lg)}
+ .hero--intro .hero__body{color:var(--text-primary);padding-block:var(--space-8)}
+ .hero--intro h1{color:var(--text-primary);max-width:none}
+ .hero--intro .hero__sub{color:var(--text-secondary)}}
+
+
+
+/* ===== THE RED TREATMENT =====
+ Item 7 Step 6 permits brand red in four non-interactive roles only: large
+ display type, subtle tinted surfaces, non-informational graphics and
+ decorative rules. It is barred from every interactive and feedback role
+ because brand red and danger red measure 1.26:1 apart and cannot be told
+ apart. Five deliberate uses on this site, each measured:
+   1. the section rule above every H2    accent-500 on page    6.23:1
+   2. the mountain motif divider, once   accent-500 on page    6.23:1
+   3. the Why Choose Us band, tinted     text on accent-50    15.39:1
+   4. the statistic figures              accent-500 4xl/700    5.86:1
+   5. the footer peak mark               accent-300 on navy    5.31:1
+ NOT in the hero: no accent step clears 3:1 against the scrim (best 1.27:1),
+ so the focal view stays navy and photographic. ===== */
+
+
+.sec--accent{background:var(--bg-accent-subtle)}
+.peak{display:flex;align-items:center;gap:var(--space-4)}
+.peak::before,.peak::after{content:"";flex:1;height:1px;background:var(--border-default)}
+.peak svg{width:52px;height:18px;flex:none;color:var(--accent-500)}
+.ftr__mark{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-6)}
+.ftr__mark svg{width:40px;height:14px;color:var(--accent-300)}
+.ftr__mark span{font-weight:700;font-size:var(--fs-base)}
+
+
+/* ===== ICON =====
+ Heroicons v2.1.5, 24/outline, MIT. Item 6 RULE 5.1 required ONE named open
+ library and named none; Heroicons is the selection, chosen because its outline
+ set IS Item 6's spec: 24px grid, 1.5px stroke, rounded terminals, outlined by
+ default, with a solid variant for the one filled case Item 6 permits.
+ Stroke is 1.5px per Item 6 Step 5 — NOT the 2px that Items 11 and 12 quote. */
+.ico{width:24px;height:24px;flex:none;display:inline-block;vertical-align:-.28em;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ico--sm{width:16px;height:16px;vertical-align:-.18em}
+.reason .ico{display:block;width:28px;height:28px;color:var(--accent-500);margin-bottom:var(--space-3)}
+.notice .ico,.err .ico{margin-top:1px}
+.btn .ico{width:20px;height:20px}
+.ftr__mark .ico{color:var(--accent-300)}
+
+
+/* eyebrow + highlighted phrase */
+.eyebrow{display:none;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);
+ font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
+.eyebrow::before{content:"";flex:none;width:28px;height:3px;border-radius:var(--radius-full);background:var(--accent-500)}
+/* Item 5 rejected an eyebrow outright: "the measured budget has no room for one at
+   320px". Wisdom overrode that on 22 Oct. The override is honoured from bp-md up and
+   the 320px fold is protected by holding it back below that. */
+@media(min-width:640px){.eyebrow{display:flex}}
+.hl{color:var(--accent-500)}
+
+
+/* ===== HERO STATISTICS STRIP =====
+ Adopted from the previous Mountain Crest design at Wisdom's request, 23 Oct:
+ the figures attach to the foot of the hero rather than sitting in their own
+ band further down. Their wordings are kept; their numbers are not -- see the
+ Figures Register. The strip uses the same frosted treatment as the card, which
+ is what lets the figures stay in accent-500: on a DARK strip accent-500 measures
+ 2.37:1 against navy-700 and would have had to become white or accent-300. */
+.hstat{border-top:1px solid var(--border-default);margin-top:var(--space-6);padding-top:var(--space-5)}
+.hstat ul{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-5) var(--space-4)}
+/* five figures do not divide by two. The fifth spans the row rather than
+   dangling in the left cell, which also gives the pass rate -- the figure
+   parents weigh most -- its own line at the narrowest width. */
+.hstat li:nth-child(5){grid-column:1/-1}
+@media(min-width:640px){.hstat ul{grid-template-columns:repeat(3,1fr)}
+ .hstat li:nth-child(5){grid-column:auto}}
+.hstat .stat__n{font-size:var(--fs-2xl)}
+.hstat .stat__l{font-size:var(--fs-xs);color:var(--text-muted)}
+@media(min-width:960px){
+ .hero__stats{position:absolute;left:0;right:0;bottom:0;z-index:1;
+  background:rgba(255,255,255,.90);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid rgba(183,42,38,.20)}
+ .hero__stats .wrap{padding-block:var(--space-5)}
+ .hero__stats ul{grid-template-columns:repeat(5,1fr);gap:var(--space-5)}
+ .hero__stats .stat__n{font-size:var(--fs-3xl)}
+ .hero{padding-bottom:132px}
+ .hstat{border:0;margin:0;padding:0}
+}
+
+
+/* dividers and hover, taken from the old design's strip. The dividers run only
+   where the figures sit in ONE row; at narrower widths the grid gap separates
+   them and a vertical rule would land at the start of a wrapped row. */
+.hstat li{border-radius:var(--radius-md);transition:background var(--dur-fast) var(--ease)}
+.hstat li:hover{background:rgba(183,42,38,.06)}
+@media(min-width:960px){
+ .hero__stats li{position:relative;padding:var(--space-2) var(--space-5)}
+ .hero__stats li:first-child{padding-left:var(--space-2)}
+ .hero__stats li+li::before{content:"";position:absolute;left:0;top:50%;
+  transform:translateY(-50%);width:1px;height:64%;background:var(--border-default)}
+}
+
+
+/* ===== picture ===== */
+.pic{display:block;width:100%}
+.pic img{display:block;width:100%;height:auto}
+.card>.pic img{border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+.hero>.pic{position:static}
+.hero>.pic img{width:100%;height:auto;display:block}
+@media(min-width:960px){
+ .hero>.pic{position:absolute;inset:0;height:100%}
+ .hero>.pic img{height:100%;object-fit:cover;object-position:54% 58%}
+}
+.hero--intro>.pic img{border-radius:var(--radius-lg)}
+@media(min-width:960px){.hero--intro>.pic{position:static;height:auto}
+ .hero--intro>.pic img{height:auto;object-fit:contain}}
+.g2>.pic img{border-radius:var(--radius-lg)}
+
+/* ===== statistic ===== */
+.stat__n{font-size:var(--fs-3xl);font-weight:700;line-height:1.05;color:var(--text-display-accent)}
+.stat__l{margin-top:var(--space-1);font-size:var(--fs-base);color:var(--text-secondary)}
+@media(min-width:960px){.stat__n{font-size:var(--fs-4xl)}}
+
+/* ===== reason / value item ===== */
+.reason h3{font-size:var(--fs-lg);font-weight:700}
+.reason p{margin-top:var(--space-2);color:var(--text-secondary)}
+
+/* ===== ordered steps ===== */
+.steps{counter-reset:s;display:grid;gap:var(--space-6)}
+.step{display:grid;grid-template-columns:40px 1fr;gap:var(--space-4);align-items:start}
+.step__n{width:40px;height:40px;border-radius:var(--radius-full);background:var(--bg-brand-subtle);
+ color:var(--navy-700);display:grid;place-items:center;font-weight:700;font-size:var(--fs-base)}
+.step h3{font-size:var(--fs-lg);font-weight:700}
+.step p{margin-top:var(--space-2);color:var(--text-secondary)}
+
+/* ===== lists ===== */
+.lst li{display:grid;grid-template-columns:20px 1fr;gap:var(--space-3);padding-block:var(--space-2);align-items:start}
+.lst .mk{font-weight:700;line-height:1.5}
+.lst--in .mk{color:var(--success-700)}
+.lst--ex .mk{color:var(--text-muted)}
+
+/* ===== accordion ===== */
+.acc{border-top:var(--bw) solid var(--border-default)}
+.acc details{border-bottom:var(--bw) solid var(--border-default)}
+.acc summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);
+ min-height:48px;padding:var(--space-3) 0;cursor:pointer;list-style:none;font-size:var(--fs-lg);font-weight:500}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary:hover{background:var(--bg-surface)}
+.acc summary::after{content:"";flex:none;width:10px;height:10px;border-right:2px solid var(--text-secondary);
+ border-bottom:2px solid var(--text-secondary);transform:rotate(45deg) translateY(-3px);transition:transform var(--dur-fast) var(--ease)}
+.acc details[open]>summary::after{transform:rotate(225deg) translateY(3px)}
+.acc__p{padding-bottom:var(--space-5);color:var(--text-secondary);max-width:70ch}
+.acc__p p+p{margin-top:var(--space-3)}
+
+/* ===== location card ===== */
+.loc .ph{aspect-ratio:16/9}
+.loc address{font-style:normal;color:var(--text-secondary);margin-top:var(--space-2)}
+
+/* ===== form ===== */
+.form{max-width:var(--c-prose)}
+.fld{margin-bottom:var(--space-5)}
+.fld label{display:block;font-weight:500;margin-bottom:var(--space-2)}
+.fld .hint{display:block;font-size:var(--fs-xs);color:var(--text-muted);margin-bottom:var(--space-2)}
+.fld input,.fld select,.fld textarea{width:100%;min-height:48px;padding:var(--space-3);
+ font:400 var(--fs-base)/1.4 inherit;color:var(--text-primary);background:var(--bg-page);
+ border:var(--bw) solid var(--border-strong);border-radius:var(--radius-sm)}
+.fld textarea{min-height:96px;resize:vertical}
+.fld input:hover,.fld select:hover,.fld textarea:hover{border-color:var(--neutral-600)}
+.err{display:flex;gap:var(--space-2);margin-top:var(--space-2);font-size:var(--fs-xs);color:var(--danger-700);font-weight:500}
+.fld--err input,.fld--err select{border-width:2px;border-color:var(--danger-700)}
+fieldset{margin:0 0 var(--space-5);padding:0;border:0}
+legend{font-weight:500;margin-bottom:var(--space-2);padding:0}
+.radio{display:flex;align-items:center;gap:var(--space-3);min-height:var(--target);cursor:pointer}
+.radio input{width:20px;height:20px;min-height:0;accent-color:var(--action-primary);flex:none}
+.notice{display:flex;gap:var(--space-3);padding:var(--space-4);border-radius:var(--radius-md);
+ background:var(--info-100);color:var(--info-700);font-size:var(--fs-base);margin-top:var(--space-5)}
+.ok{padding:var(--space-5);border-radius:var(--radius-md);background:var(--success-100);color:var(--success-700)}
+.ok h3{color:var(--success-700);font-weight:700;font-size:var(--fs-lg)}
+.ok p{margin-top:var(--space-2);color:var(--success-700)}
+.empty{padding:var(--space-8) var(--space-5);text-align:center;background:var(--bg-surface);border-radius:var(--radius-lg)}
+.empty p{color:var(--text-secondary);max-width:46ch;margin-inline:auto}
+
+/* ===== footer ===== */
+.ftr{background:var(--bg-inverse);color:var(--text-inverse);padding-block:var(--space-8)}
+.ftr h2{font-size:var(--fs-base);font-weight:700;color:var(--text-inverse);margin-bottom:var(--space-3)}
+.ftr a{color:var(--text-inverse);text-decoration:none;display:inline-flex;align-items:center;min-height:var(--target)}
+.ftr a:hover{text-decoration:underline}
+.ftr__cols{display:grid;gap:var(--space-6)}
+@media(min-width:640px){.ftr__cols{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:960px){.ftr__cols{grid-template-columns:repeat(4,1fr)}}
+.ftr address{font-style:normal;color:var(--brand-200);line-height:1.6}
+.ftr__legal{margin-top:var(--space-7);padding-top:var(--space-5);border-top:var(--bw) solid var(--brand-500);
+ display:flex;gap:var(--space-5);flex-wrap:wrap;font-size:var(--fs-xs);color:var(--brand-200);align-items:center}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ===== ADOPTED DESIGN — levels to footer =====
+ Built from the 1440 desktop mockup, measured rather than eyeballed:
+ container inner 1216 (already what --c-content 1280 minus --margin 32 gives),
+ section padding-block 96 (--space-9), a 40x3 red rule at the head of every
+ section, level card 283 wide with a 3:2 image and 26/34px gaps, meet card 286
+ with a 4:5 image, campus card 595, news card 390 with a 3:2 image, and the
+ one-of-ours photograph at 480x600.
+
+ The hero and its statistics strip are untouched.
+
+ The campus maps are drawn SVG, not raster map tiles: about 1.1 KB each inline
+ against roughly 40 KB for a static map image, with no third-party request. */
+:root{
+ --rail:#B2A9D6;
+ --ph-bg:#ECE7E1;
+ --bg-brand-subtle:#EFF5FA;
+ --map-bg:#EFF5FA;
+ --map-river:#DCE9F5;
+ --map-halo:rgba(41,22,108,.10);
+ --ink-nav:var(--navy-700);
+}
+.sec--brand{background:var(--bg-brand-subtle)}
+.sec--talk{background:var(--neutral-0)}
+.rule{width:40px;height:3px;background:var(--accent-500);border-radius:2px;
+ margin:0 0 var(--space-5)}
+.sec__head--row{display:flex;align-items:flex-end;justify-content:space-between;
+ gap:var(--space-5);flex-wrap:wrap}
+.sec__note{margin-top:var(--space-6);color:var(--text-secondary)}
+.lnk{display:inline-flex;align-items:center;gap:var(--space-2);min-height:var(--target);
+ color:var(--ink-nav);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.lnk::after{content:none}
+.ico--sm{width:18px;height:18px}
+.ico--lg{width:32px;height:32px;color:var(--accent-500);display:block}
+
+/* ---------- levels ---------- */
+.lvlset{display:grid;grid-template-columns:1fr;gap:var(--space-7)}
+.cgrp__label{display:flex;align-items:center;gap:var(--space-2);margin:0 0 var(--space-2);
+ font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+ color:var(--text-primary)}
+.cgrp__rail{height:11px;border:1.5px solid var(--rail);border-bottom:0;
+ border-radius:10px 10px 0 0;margin-bottom:16px}
+.lcards{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0;padding:0}
+.lvlset__rail{height:11px;border:1.5px solid var(--rail);border-top:0;
+ border-radius:0 0 10px 10px;margin-top:24px}
+.lcard{display:flex}
+.lcard__a{display:flex;flex-direction:column;width:100%;text-decoration:none;color:inherit;
+ background:var(--neutral-0);border:1px solid var(--border-default);border-radius:12px;
+ overflow:hidden;transition:transform var(--dur-base) var(--ease),
+ box-shadow var(--dur-base) var(--ease),border-color var(--dur-fast) var(--ease)}
+.lcard__a:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);
+ border-color:var(--rail)}
+.lcard__a:focus-visible{outline:var(--bw-focus) solid var(--border-focus);outline-offset:3px}
+.lcard__pic{display:block}
+.lcard__pic img{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;display:block}
+.lcard__b{display:flex;flex-direction:column;flex:1;padding:var(--space-5)}
+.lcard__age{font-size:var(--fs-xs);font-weight:700;color:var(--ink-nav)}
+.lcard__name{margin-top:var(--space-2);font-size:var(--fs-lg);font-weight:700;
+ line-height:1.25;color:var(--text-primary)}
+.lcard__txt{margin-top:var(--space-2);color:var(--text-secondary)}
+.lcard__cta{margin-top:auto;padding-top:var(--space-4);display:inline-flex;
+ align-items:center;gap:var(--space-2);font-weight:700;color:var(--ink-nav)}
+.lcard__a:hover .lcard__cta{text-decoration:underline;text-underline-offset:3px}
+.sen{margin-top:16px;background:var(--bg-brand-subtle);border-radius:12px;
+ padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-5)}
+.kicker{font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--ink-nav)}
+.sen__h{margin-top:var(--space-2);font-size:var(--fs-xl);line-height:1.2}
+.sen__p{margin-top:var(--space-3);color:var(--text-secondary);max-width:62ch}
+
+
+/* ---------- people ---------- */
+.people{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0 0 var(--space-6);padding:0}
+.ph{background:var(--ph-bg);border-radius:12px;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:var(--space-2);padding:var(--space-5);
+ text-align:center;color:var(--text-muted)}
+.ph--45{aspect-ratio:4/5}
+.ph__t{font-size:var(--fs-xs);max-width:28ch}
+.person__n{margin-top:var(--space-4);font-size:1.125rem;font-weight:700}
+.person__r{margin-top:var(--space-1);color:var(--text-secondary)}
+
+/* ---------- one of ours ---------- */
+.ours{display:grid;grid-template-columns:1fr;gap:var(--space-7);align-items:center}
+.ours__pic img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;
+ border-radius:12px;display:block}
+.ours__p{margin-top:var(--space-4);font-size:var(--fs-lg);color:var(--text-secondary);
+ max-width:46ch}
+.ours__p strong{color:var(--text-primary);font-weight:700}
+.ours__b .lnk{margin-top:var(--space-5)}
+
+/* ---------- campuses ---------- */
+.camps{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0 0 var(--space-6);padding:0}
+.camp{background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px;overflow:hidden}
+.camp__map{position:relative;aspect-ratio:600/260;background:var(--map-bg)}
+.cmap{width:100%;height:100%;display:block}
+.cmap .rds{stroke:#fff;stroke-width:11;stroke-linecap:round;fill:none}
+.cmap .riv{stroke:var(--map-river);stroke-width:17;fill:none;stroke-linecap:round}
+.cmap .pin{fill:var(--navy-700)}
+.camp__open{position:absolute;right:12px;bottom:12px;display:inline-flex;
+ align-items:center;gap:var(--space-2);min-height:var(--target);padding:0 var(--space-4);
+ background:var(--neutral-0);border-radius:8px;box-shadow:var(--shadow-sm);
+ font-size:var(--fs-xs);font-weight:700;color:var(--ink-nav);text-decoration:none}
+.camp__open:hover{text-decoration:underline;text-underline-offset:3px}
+.camp__b{padding:var(--space-5)}
+.camp__n{font-size:var(--fs-lg);font-weight:700}
+.camp__s{margin-top:var(--space-1);color:var(--text-secondary)}
+
+/* ---------- news ---------- */
+.posts{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0;padding:0}
+.post{display:flex}
+/* --- news card, adopted from the previous Mountain Crest site --- */
+.ncard{display:flex;flex-direction:column;width:100%;background:var(--neutral-0);
+ border-radius:12px;overflow:hidden;
+ box-shadow:0 2px 16px rgba(41,22,108,.08);
+ transition:transform .3s ease,box-shadow .3s ease}
+.ncard:hover,.ncard:focus-within{transform:translateY(-5px);
+ box-shadow:0 8px 32px rgba(41,22,108,.16)}
+.ncard__img{position:relative;aspect-ratio:7/4;overflow:hidden;
+ background:var(--navy-700);flex:none}
+.ncard__pic,.ncard__pic img{display:block;width:100%;height:100%}
+.ncard__pic img{object-fit:cover;
+ transition:transform .65s cubic-bezier(.4,0,.2,1)}
+.ncard:hover .ncard__pic img,.ncard:focus-within .ncard__pic img{transform:scale(1.05)}
+.ncard__date,.ncard__cat{position:absolute;top:var(--space-4);z-index:2;
+ display:inline-flex;align-items:center;border-radius:100px;font-weight:700;
+ white-space:nowrap}
+.ncard__date{left:var(--space-4);padding:4px 11px;font-size:var(--fs-xs);
+ letter-spacing:.06em;background:var(--accent-500);color:var(--neutral-0)}
+.ncard__cat{right:var(--space-4);padding:4px 10px;font-size:var(--fs-xs);
+ letter-spacing:.08em;text-transform:uppercase;color:var(--neutral-0);
+ background:rgba(41,22,108,.78);backdrop-filter:blur(8px);
+ -webkit-backdrop-filter:blur(8px)}
+.ncard__b{display:flex;flex-direction:column;flex:1;padding:var(--space-6)}
+.ncard__t{font-size:var(--fs-base);font-weight:700;line-height:1.4;
+ color:var(--ink-nav);
+ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+ line-clamp:2;overflow:hidden}
+.ncard__x{margin-top:var(--space-3);font-size:var(--fs-xs);line-height:1.7;
+ color:var(--text-secondary);flex:1;
+ display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+ line-clamp:3;overflow:hidden}
+.ncard__rule{width:100%;height:1px;background:rgba(41,22,108,.12);
+ margin:var(--space-5) 0}
+.ncard__link{margin-top:auto;display:inline-flex;align-items:center;gap:6px;
+ align-self:flex-start;min-height:var(--target);
+ font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;
+ color:var(--accent-500);text-decoration:none;
+ transition:gap .2s ease,color .2s ease}
+.ncard__link:hover{color:var(--ink-nav);gap:10px;text-decoration:underline;
+ text-underline-offset:3px}
+.ncard__link:focus-visible{outline:var(--bw-focus) solid var(--border-focus);
+ outline-offset:3px;border-radius:4px}
+.ncard__arw{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;
+ stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;
+ transition:transform .2s ease}
+.ncard__link:hover .ncard__arw{transform:translateX(3px)}
+@media(prefers-reduced-motion:reduce){
+ .ncard,.ncard__pic img,.ncard__link,.ncard__arw{transition:none}
+ .ncard:hover,.ncard:focus-within{transform:none}
+ .ncard:hover .ncard__pic img,.ncard:focus-within .ncard__pic img{transform:none}
+}
+
+/* ---------- talk ---------- */
+.divider{display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-8)}
+.divider span{flex:1;height:1px;background:var(--border-default)}
+.crestline{width:76px;height:18px;flex:none;fill:none;stroke:var(--accent-500);
+ stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.talk{display:grid;grid-template-columns:1fr;gap:var(--space-7);align-items:start}
+.talk__p{margin-top:var(--space-4);font-size:var(--fs-lg);color:var(--text-secondary);
+ max-width:34ch}
+.talk__n{margin-top:var(--space-5);font-size:var(--fs-xs);color:var(--text-muted)}
+.btn--block{width:100%}
+.routes{display:grid;grid-template-columns:1fr;gap:12px;list-style:none;
+ margin:12px 0 0;padding:0}
+.route{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-3);
+ height:100%;padding:var(--space-4);border:1px solid var(--border-default);
+ border-radius:10px;text-decoration:none;color:var(--ink-nav);font-weight:700;
+ transition:border-color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease)}
+.route:hover{border-color:var(--ink-nav);background:var(--bg-brand-subtle)}
+.route:focus-visible{outline:var(--bw-focus) solid var(--border-focus);outline-offset:2px}
+.route .ico{color:var(--ink-nav)}
+
+/* ---------- footer ---------- */
+.ftr{background:var(--navy-700);color:var(--neutral-0);padding-block:var(--space-8)}
+.ftr__grid{display:grid;grid-template-columns:1fr;gap:var(--space-7)}
+.crest{width:48px;height:56px;fill:none}
+.crest__s,.crest__m,.crest__b{fill:none;stroke:var(--neutral-0);stroke-width:2.5;
+ stroke-linejoin:round;stroke-linecap:round}
+.ftr__name{margin-top:var(--space-5);font-size:var(--fs-lg);font-weight:700}
+.ftr__tag{margin-top:var(--space-1);color:var(--brand-200)}
+.ftr__col h2{font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--brand-200)}
+.ftr__col ul{list-style:none;margin:var(--space-5) 0 0;padding:0;
+ display:grid;gap:var(--space-4)}
+.ftr__col a{display:inline-flex;align-items:center;gap:var(--space-2);
+ min-height:var(--target);color:var(--neutral-0);text-decoration:none}
+.ftr__col a:hover{text-decoration:underline;text-underline-offset:3px}
+.ftr__col a:focus-visible{outline:var(--bw-focus) solid var(--neutral-0);outline-offset:2px}
+.ftr__addr{font-style:normal;margin-top:var(--space-5)}
+.ftr__place{font-weight:700}
+.ftr__sub{margin-top:2px;margin-bottom:var(--space-4);color:var(--brand-200)}
+.ftr__ct{margin-top:var(--space-2)}
+.ftr__end{display:flex;align-items:center;gap:var(--space-4);margin-top:var(--space-8)}
+.crestline--sm{width:60px;height:14px;stroke:var(--accent-300)}
+.ftr__rule{flex:1;height:1px;background:rgba(255,255,255,.22)}
+.ftr__cp{margin-top:var(--space-5);font-size:var(--fs-xs);color:var(--brand-200)}
+
+/* ---------- breakpoints ---------- */
+@media(min-width:640px){
+ .lcards{grid-template-columns:1fr 1fr;gap:26px}
+ .people{grid-template-columns:1fr 1fr}
+ .posts{grid-template-columns:1fr 1fr}
+ .routes{grid-template-columns:repeat(3,1fr)}
+ .sen{flex-direction:row;align-items:center;justify-content:space-between;
+  gap:var(--space-6)}
+ .sen .btn{flex:none}
+}
+@media(min-width:960px){
+ .lvlset{grid-template-columns:1fr 1fr;gap:34px}
+ .people{grid-template-columns:repeat(4,1fr);gap:25px}
+ .camps{grid-template-columns:1fr 1fr;gap:25px}
+ .posts{grid-template-columns:repeat(3,1fr);gap:23px}
+ .ours{grid-template-columns:480px 1fr;gap:80px}
+ .talk{grid-template-columns:1fr 1.15fr;gap:40px}
+ .ftr__grid{grid-template-columns:1.35fr 1fr 1fr 1.25fr;gap:var(--space-7)}
+}
+@media(prefers-reduced-motion:reduce){
+ .lcard__a{transition:none}
+ .lcard__a:hover:hover{transform:none}
+}
+
+/* ===== OUR STORY — between the hero strip and the levels =====
+ Desktop 1440: left track 568, gap 88, right 560; portrait 560x420 at 4:3;
+ quote card 520 wide, inset 40 from the portrait's left, flush with its right,
+ overlapping its bottom edge by 64. Phone 320: portrait 288x216, card 272 wide,
+ inset 16, overlap 36. The card is pulled up with a negative margin rather than
+ absolutely positioned, so its width falls out of the inset and the portrait
+ keeps its place in flow at every width.
+
+ Copy is verbatim from the mockup. Six claims in it and the whole proprietor
+ attribution are unconfirmed and sit on the launch checklist. */
+.story{display:grid;grid-template-columns:1fr;gap:var(--space-7);align-items:center}
+.story__p{margin-top:var(--space-4);color:var(--text-secondary)}
+.story__b .lnk{margin-top:var(--space-5)}
+.story__b .kicker{margin-bottom:var(--space-3)}
+.story__media{position:relative}
+.ph--43{aspect-ratio:4/3}
+.story__ph{justify-content:space-between;align-items:center;
+ padding:var(--space-6) var(--space-5) 56px;text-align:center}
+.story__face{flex:none;width:76px;height:76px;border:2px dashed var(--neutral-450);
+ border-radius:50%;display:flex;align-items:center;justify-content:center;
+ font-size:var(--fs-xs);color:var(--text-muted)}
+.story__cap{display:block}
+.ph__k{display:block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--text-secondary)}
+.story__brief{display:none;margin-top:var(--space-2);max-width:44ch}
+.story__k1{display:none}
+.quote{margin:-36px 0 0 16px;background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:12px;box-shadow:var(--shadow-md);
+ padding:var(--space-5)}
+.quote__m{display:block;font-size:46px;line-height:.75;font-weight:700;
+ color:var(--rail)}
+.quote__t{margin:var(--space-4) 0 0;padding:0;border:0;quotes:none}
+.quote__t p{font-size:var(--fs-lg);line-height:1.5;color:var(--text-primary)}
+.quote__c{display:block;margin-top:var(--space-5);padding-top:var(--space-5);
+ border-top:1px solid var(--border-default)}
+.quote__n{display:block;font-weight:700;color:var(--ink-nav)}
+.quote__r{display:block;margin-top:2px;color:var(--text-secondary)}
+@media(min-width:960px){
+ .story{grid-template-columns:minmax(0,1fr) minmax(360px,560px);
+  gap:var(--space-8);align-items:center}
+ .story__ph{padding:48px var(--space-6) 88px}
+ .story__face{width:120px;height:120px}
+ .story__brief{display:block}
+ .story__k1{display:inline}
+ .story__k2{display:none}
+ .quote{margin:-64px 0 0 40px;padding:var(--space-6)}
+ .quote__m{font-size:56px}
+}
+@media(min-width:1280px){.story{gap:88px}}
+
+/* ===== WHY PARENTS CHOOSE — full-bleed photographs that fade out =====
+ Measured off the reference capture (1357 wide, half = 678): the image fills
+ exactly half the viewport, flush to the outer edge and flush top and bottom,
+ and its alpha holds at 1.00 to 50% of its own width then falls linearly to 0
+ at 100% — 0.82 at 60%, 0.63 at 70%, 0.46 at 80%, 0.24 at 90%. That is one
+ gradient, so the whole effect is a CSS mask and nothing else: no JavaScript,
+ no image editing. Dropping a new photograph in needs no retouching.
+
+ A mask fades to TRANSPARENT rather than to white, so the effect survives any
+ later change of section background. Browsers without mask support get an
+ equivalent overlay instead, gated behind @supports so the two never stack.
+
+ Background is plain white here, as the reference has it. The phone layout is
+ unchanged from the approved mockup: a 96x96 thumbnail beside the kicker and
+ title, with the body and link full width beneath. The bleed and the fade are
+ desktop only — at 320 there is no room for a half-width image. */
+.sec--bleed{background:var(--neutral-0);overflow:hidden}
+/* the rows sit outside .wrap so the picture can bleed, so below the bleed
+   breakpoint they carry the container gutter themselves */
+.zz{display:grid;gap:var(--space-7);list-style:none;margin:0;
+ padding:0 var(--margin)}
+.zz__i{display:grid;grid-template-columns:96px minmax(0,1fr);
+ grid-template-areas:"pic head" "body body";gap:var(--space-4);align-items:start}
+.zz__i--r{grid-template-columns:minmax(0,1fr) 96px;
+ grid-template-areas:"head pic" "body body"}
+.zz__ph{grid-area:pic;position:relative;aspect-ratio:1;align-self:start;
+ display:flex;align-items:center;justify-content:center;text-align:center;
+ overflow:hidden}
+.zz__img{position:absolute;inset:0;display:block;width:100%;height:100%;
+ object-fit:cover;background:var(--ph-bg)}
+.zz__cap{position:relative;z-index:1;padding:var(--space-3)}
+.zz__head{grid-area:head}
+.zz__body{grid-area:body}
+.zz__pk,.zz__pt{display:none}
+.zz__ps{display:block;font-size:var(--fs-xs);color:var(--text-muted)}
+.zz__n{font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--ink-nav)}
+.zz__h{margin-top:var(--space-2);font-weight:700;line-height:1.3;
+ font-size:clamp(1.25rem,1.09rem + .8vw,var(--fs-xl))}
+.zz__p{color:var(--text-secondary)}
+.zz__body .lnk{margin-top:var(--space-3)}
+.zz__more{margin-top:var(--space-8)}
+.zz__more .btn{width:100%}
+@media(min-width:640px){
+ .zz__more{text-align:center}
+ .zz__more .btn{width:auto}
+}
+@media(min-width:960px){
+ /* the gutter that lines the outer text edge up with every other section */
+ .sec--bleed{--page-gutter:calc(max(0px,(100vw - var(--c-content)))/2 + var(--margin))}
+ .zz{gap:0;padding:0}
+ /* four rows: two 1fr spacers centre the text while the picture, spanning all
+    four, still stretches to the full height of the row */
+ .zz__i{grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr auto auto 1fr;
+  grid-template-areas:"pic ." "pic head" "pic body" "pic .";
+  gap:0;min-height:380px;align-items:stretch}
+ .zz__i--r{grid-template-areas:". pic" "head pic" "body pic" ". pic"}
+ .zz__ph{grid-area:pic;aspect-ratio:auto;align-self:stretch;
+  justify-content:flex-start}
+ .zz__i--r .zz__ph{justify-content:flex-end}
+ .zz__img{-webkit-mask-image:linear-gradient(to right,#000 50%,transparent 100%);
+  mask-image:linear-gradient(to right,#000 50%,transparent 100%)}
+ .zz__i--r .zz__img{
+  -webkit-mask-image:linear-gradient(to left,#000 50%,transparent 100%);
+  mask-image:linear-gradient(to left,#000 50%,transparent 100%)}
+ .zz__cap{width:50%;padding:var(--space-6)}
+ /* the text box is 480 wide once its own padding is taken off; the outer
+    side carries the page gutter so it lines up with every other section */
+ .zz__head{grid-area:head;align-self:end}
+ .zz__body{grid-area:body;align-self:start;padding-top:var(--space-4)}
+ .zz__head,.zz__body{max-width:calc(480px + var(--space-7) + var(--page-gutter))}
+ .zz__i .zz__head,.zz__i .zz__body{
+  padding-left:var(--space-7);padding-right:var(--page-gutter)}
+ .zz__i--r .zz__head,.zz__i--r .zz__body{
+  padding-left:var(--page-gutter);padding-right:var(--space-7)}
+ .zz__i--r .zz__head,.zz__i--r .zz__body{margin-left:0}
+ .zz__ps{display:none}
+ .zz__pk{display:block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--text-secondary)}
+ .zz__pt{display:block;margin-top:var(--space-2);font-size:var(--fs-xs);
+  color:var(--text-muted)}
+}
+/* only where masks are unavailable — never both */
+@supports not ((-webkit-mask-image:linear-gradient(#000,#000)) or (mask-image:linear-gradient(#000,#000))){
+ @media(min-width:960px){
+  .zz__ph::after{content:"";position:absolute;inset:0;z-index:0;
+   background:linear-gradient(to right,transparent 50%,var(--neutral-0) 100%)}
+  .zz__i--r .zz__ph::after{
+   background:linear-gradient(to left,transparent 50%,var(--neutral-0) 100%)}
+ }
+}
+
+/* ===== FOOTER RETOUCH =====
+ Four columns: brand + description + social; one Quick links column with the
+ links grouped under small labels and a hairline between groups; Get in touch
+ carrying the old Visit & contact content with a pin beside each campus; and a
+ newsletter sign-up.
+
+ The Subscribe button is brand-500 with navy-900 text rather than the
+ reference's gold: measured, that is 4.42:1 against the footer so the button
+ reads as a component, and 5.44:1 for its own label. Brand red would have been
+ 2.36:1 against this navy and would have sunk into it. */
+.ftr__about{margin-top:var(--space-4);color:var(--brand-200);max-width:36ch}
+.socials{display:flex;flex-wrap:wrap;gap:var(--space-3);list-style:none;
+ margin:var(--space-6) 0 0;padding:0}
+.soc{display:inline-flex;align-items:center;justify-content:center;
+ width:var(--target);height:var(--target);border-radius:50%;
+ border:1px solid rgba(255,255,255,.28);color:var(--neutral-0);
+ font-size:var(--fs-xs);font-weight:700;text-decoration:none;
+ transition:background var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease)}
+.soc:hover{background:rgba(255,255,255,.14);border-color:var(--neutral-0)}
+.soc:focus-visible{outline:var(--bw-focus) solid var(--neutral-0);outline-offset:2px}
+
+.ftr__col--links h2{margin-bottom:var(--space-4)}
+.ftr__grp{margin-top:var(--space-4)}
+.ftr__grp:first-of-type{margin-top:0}
+.ftr__grp--div{border-top:1px solid rgba(255,255,255,.16);padding-top:var(--space-4)}
+.ftr__glabel{font-size:var(--fs-xs);font-weight:700;letter-spacing:.07em;
+ text-transform:uppercase;color:var(--brand-200);margin-bottom:var(--space-2)}
+.ftr__col--links ul{margin:0;gap:0}
+.ftr__col--links li{line-height:1.2}
+/* Wisdom asked for a tighter rhythm in this column. On a phone that would
+   take the tap targets under the 44x44 Item 11 adopted above level, so the
+   squeeze applies only from 960 up, where the pointer is a mouse. Below it
+   the links keep the full target. */
+.ftr__col--links a{min-height:var(--target);padding-block:2px}
+
+.ftr__loc{display:flex;align-items:flex-start;gap:var(--space-2);
+ margin-bottom:var(--space-4)}
+.ftr__loc .ico{margin-top:3px;color:var(--brand-200)}
+.ftr__loc>span{display:block}
+.ftr__place{display:block;font-weight:700}
+.ftr__sub{display:block;margin-top:2px;margin-bottom:0;color:var(--brand-200)}
+
+.ftr__nlp{margin-top:var(--space-5);color:var(--brand-200);max-width:34ch}
+.nl{margin-top:var(--space-5);display:grid;gap:var(--space-3)}
+.nl__in{width:100%;min-height:var(--target);padding:var(--space-3) var(--space-4);
+ font:inherit;font-size:var(--fs-base);color:var(--neutral-0);
+ background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.40);
+ border-radius:8px}
+.nl__in::placeholder{color:var(--brand-200);opacity:1}
+.nl__in:focus-visible{outline:var(--bw-focus) solid var(--neutral-0);outline-offset:2px;
+ background:rgba(255,255,255,.16)}
+.nl__btn{width:100%;min-height:var(--target);border:0;border-radius:8px;
+ font:700 var(--fs-base)/1 inherit;font-family:inherit;cursor:pointer;
+ background:var(--brand-500);color:var(--navy-900);
+ transition:background var(--dur-fast) var(--ease)}
+.nl__btn:hover{background:var(--brand-200)}
+.nl__btn:focus-visible{outline:var(--bw-focus) solid var(--neutral-0);outline-offset:2px}
+.ftr__fine{margin-top:var(--space-3);font-size:var(--fs-xs);color:var(--brand-200);
+ opacity:.85}
+@media(min-width:960px){
+ .ftr__grid{grid-template-columns:1.5fr 1fr 1.15fr 1.25fr}
+ .ftr__col--links a{min-height:32px}
+}
+
+/* ===== SECTION HEADS — one dash, one eyebrow =====
+ The dash is the .rule element in the markup. The .sec__head::before that used
+ to paint a second one is gone: it was also what pushed the news heading into
+ the middle of its flex row. */
+.sec__head .kicker,.ours__b .kicker,.talk__l .kicker{margin-bottom:var(--space-3)}
+.sec__head--row>div{display:flex;flex-direction:column;align-items:flex-start}
+.talk__l .rule{margin-bottom:var(--space-5)}
+
+/* Our story now carries two links side by side */
+.story__links{display:flex;flex-wrap:wrap;align-items:center;
+ gap:var(--space-2) var(--space-6);margin-top:var(--space-5)}
+.story__b .lnk{margin-top:0}
+
+/* in-page jump: clear the sticky header, and only animate if the reader
+   has not asked for less motion */
+/* The sticky header measures 81px at 1440. Item 11 reserves 112px for it,
+   so jump targets clear that rather than the 64 I first used, which left
+   the top 17px of the target behind the header. */
+:root{--hdr-reserve:112px}
+:where(section[id],[id^="lvl"]){scroll-margin-top:var(--hdr-reserve)}
+@media(prefers-reduced-motion:no-preference){
+ html{scroll-behavior:smooth}
+}
+
+/* ===== RIDGELINE — decorative background for the levels section =====
+ Per ridgeline-handover-prompt.md. Three ridgelines climbing left to right in
+ the top-right corner, one low ridge along the bottom, taken from the crest's
+ mountain. Line art only: no fill, no gradient, no photo, no animation.
+
+ Attached as CSS background images on the section, never as markup, so screen
+ readers never announce it.
+
+ The spec's 690px third term is 32px page margin + 640px text column + 18px
+ gap. Our text column is .sec__lead at 60ch, which MEASURES 596px, not the
+ 480 I first assumed — ch is the advance of "0", which in Source Sans 3 is
+ wider than half an em. So the term is 652px = 32 + 596 + 24. At 536 the art
+ crossed the intro paragraph everywhere between 960 and about 1180. Above 1280 the .wrap centres and pushes the text right, but
+ min() means the 680px cap and the 50%-48px term bind first, so the art still
+ never reaches it. The reason this matters: the darkest ridge #B2A9D6 against
+ body text #454543 is only 4.37:1, which would fail AA if a line crossed a
+ word.
+
+ The cards and the Special Needs band keep their own solid fills, so the art
+ only ever shows in the empty space around them. 1.58 KB for all three files,
+ 0.54 KB gzipped. */
+.sec--ridge{
+ background-color:var(--neutral-0);
+ background-image:url("../img/levels-ridge-top-phone.svg"),
+                  url("../img/levels-ridge-bottom.svg");
+ background-repeat:no-repeat,no-repeat;
+ background-position:right top,center bottom;
+ background-size:170px auto,100% auto}
+@media(min-width:640px){
+ .sec--ridge{background-size:240px auto,100% auto}
+}
+@media(min-width:960px){
+ .sec--ridge{
+  background-image:url("../img/levels-ridge-top.svg"),
+                   url("../img/levels-ridge-bottom.svg");
+  background-size:min(680px,calc(50% - 48px),calc(100% - 652px)) auto,100% auto}
+}
+
+/* ===== SPLIT — the shared two-column section used across the inner pages =====
+ Lived only in the Admissions stylesheet until now, while five other pages used
+ the class in markup. Those sections were stacking instead of splitting on
+ desktop. Moved here so every page built from this shell inherits it. */
+.split{display:grid;grid-template-columns:1fr;gap:var(--space-7)}
+.split__l .sec__lead{margin-top:var(--space-4)}
+.split__l .kicker{margin-bottom:var(--space-3)}
+@media(min-width:960px){
+ .split{grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:var(--space-8);
+  align-items:start}
+ .split--rev{grid-template-columns:minmax(0,1fr) minmax(0,460px)}
+ .split--rev>.split__l{order:2}
+
+
+ }@media(min-width:1180px){.split{grid-template-columns:minmax(0,460px) minmax(0,1fr);gap:88px}}
+
+
+
+/* ===== INNER-PAGE COMPONENTS — shared by every page built from this shell
+ Hero, level pills, subject list, day timeline and placeholder tokens. These
+ lived in the Early Years builder only; Grade School and High School shipped
+ without them. The first move of them dropped the media blocks with the
+ stages grid, so the desktop layouts went missing too. Filtered at rule
+ level this time. */
+/* ===== LEVEL PAGE — shared by Early Years, Grade School, High School =====
+ Bands from the 1440 mockup. The hero is photograph-left, text-right with the
+ three level pills above the H1; the stages are a card grid where a card runs
+ without a photograph rather than with a stock one; the day is a horizontal
+ timeline that turns vertical below the desktop breakpoint, because seven
+ points will not sit side by side at 320.
+
+ The curly-brace tokens are unwritten copy, shown rather than hidden so the
+ gaps are visible: the one-line stage descriptions, the timeline times and the
+ teacher names are all still to come from the school. */
+.lvhero{padding-bottom:var(--space-8)}
+.lvhero__g{display:grid;grid-template-columns:1fr;gap:var(--space-7);align-items:center}
+.lvhero__ph{aspect-ratio:4/3;border-radius:12px;justify-content:space-between;
+ padding:var(--space-6)}
+.ph__face{width:92px;height:92px;border:2px dashed var(--neutral-450);border-radius:50%;
+ display:flex;align-items:center;justify-content:center;font-size:var(--fs-xs);
+ color:var(--text-muted);margin:auto}
+.ph__cap{display:block}
+.pills ul{display:flex;flex-wrap:wrap;gap:var(--space-3);list-style:none;margin:0;padding:0}
+.pill{display:inline-flex;align-items:center;min-height:var(--target);
+ padding:0 var(--space-5);border:1px solid var(--border-default);border-radius:100px;
+ color:var(--text-secondary);text-decoration:none}
+.pill:hover{border-color:var(--ink-nav);color:var(--ink-nav)}
+.pill--on{border-color:var(--ink-nav);background:var(--bg-brand-subtle);
+ color:var(--ink-nav);font-weight:700}
+.pill:focus-visible{outline:var(--bw-focus) solid var(--border-focus);outline-offset:2px}
+.lvhero h1{margin-top:var(--space-5);font-size:clamp(1.9rem,1.25rem + 2.8vw,3.0625rem);
+ line-height:1.1}
+.lvhero__lead{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:46ch}
+.lvhero__p{margin-top:var(--space-4);color:var(--text-secondary);max-width:52ch}
+.lvhero__acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-4) var(--space-5);
+ margin-top:var(--space-6)}
+.lvhero__at{display:inline-flex;align-items:center;gap:var(--space-2);
+ font-size:var(--fs-xs);font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+ color:var(--text-secondary)}
+.lvhero__at .ico{color:var(--ink-nav)}
+/* unwritten copy */
+.tok{display:inline-block;padding:1px 6px;border-radius:4px;
+ background:var(--neutral-100,#F1F1F0);color:var(--text-muted);font-size:var(--fs-xs)}
+/* the six stages */
+.stages{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0;padding:0;counter-reset:none}
+.stage__ph{aspect-ratio:3/2;border-radius:0;padding:var(--space-4)}
+.stage__b{padding:var(--space-5)}
+.stage__n{font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--text-muted)}
+.stage__h{margin-top:var(--space-2);font-size:var(--fs-lg);font-weight:700}
+.stage__a{margin-top:2px;font-weight:700;color:var(--ink-nav)}
+.stage__b .tok{margin-top:var(--space-3)}
+.stage__note{margin-top:var(--space-4);padding-top:var(--space-4);
+ border-top:1px dashed var(--border-default);font-size:var(--fs-xs);
+ color:var(--text-muted)}
+/* what they learn */
+.subj{display:grid;grid-template-columns:1fr;list-style:none;margin:0;padding:0}
+.subj li{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) 0;
+ border-bottom:1px solid var(--border-default)}
+.subj li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;
+ background:var(--ink-nav)}
+.subj__fine{margin-top:var(--space-4);font-size:var(--fs-xs);color:var(--text-muted)}
+/* a morning */
+.day__ph{aspect-ratio:3/2;border-radius:12px;padding:var(--space-5)}
+.tl{display:grid;grid-template-columns:1fr;gap:var(--space-5);list-style:none;
+ margin:var(--space-8) 0 0;padding:0}
+.tl__i{position:relative;display:grid;grid-template-columns:20px minmax(0,1fr);
+ gap:var(--space-3);align-items:start}
+.tl__i::before{content:"";position:absolute;left:9px;top:20px;bottom:calc(var(--space-5) * -1);
+ width:1.5px;background:var(--rail)}
+.tl__i--last::before{display:none}
+.tl__d{grid-row:1;grid-column:1;width:14px;height:14px;margin-top:4px;border-radius:50%;
+ border:2px solid var(--ink-nav);background:var(--neutral-0);position:relative;z-index:1}
+.tl__i--last .tl__d{background:var(--ink-nav)}
+.tl__i .tok{grid-row:1;grid-column:2}
+.tl__l{grid-row:2;grid-column:2;font-weight:700}
+.day__cta{margin-top:var(--space-7)}
+
+@media(min-width:640px){.subj{grid-template-columns:1fr 1fr;column-gap:var(--space-7)}
+
+
+}@media(min-width:960px){.lvhero__g{grid-template-columns:624fr 700fr;gap:var(--space-8)}
+.split--rev{grid-template-columns:minmax(0,1fr) minmax(0,460px)}
+.split--rev>.split__l{order:2}
+.camp--solo{border:0;background:none}
+/* the day becomes a true horizontal timeline */
+ .tl{grid-template-columns:repeat(7,1fr);gap:0;margin-top:var(--space-9)}
+.tl__i{display:block;padding-right:var(--space-4)}
+.tl__i::before{left:7px;right:calc(var(--space-4) * -1);top:auto;bottom:auto;
+  width:auto;height:1.5px;transform:translateY(30px)}
+.tl__i--last::before{display:none}
+.tl__d{display:block;margin:var(--space-2) 0 0}
+.tl__l{display:block;margin-top:var(--space-3)}
+}
+.camp--solo{border:0;background:none}
+.ours__ph{aspect-ratio:4/5;border-radius:12px;padding:var(--space-5)}
+.ours__fig,.talk__r,.person,.lvhero__b,.ftr__brand,.step__b,.sen__b{display:block}
+.lnk--inline{min-height:0;display:inline}
+/* form primitives — shared by Admissions and Contact */
+.fcard{background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px;padding:var(--space-6)}
+.field{margin:0 0 var(--space-5);border:0;padding:0}
+.field:last-of-type{margin-bottom:0}
+.field label,.field legend{display:block;font-weight:700;padding:0}
+.hint{display:block;margin-top:2px;font-size:var(--fs-xs);color:var(--text-muted)}
+.opt{font-weight:400;color:var(--text-muted)}
+.field input[type=text],.field input[type=tel],.field input[type=email],
+.field select,.field textarea{
+ width:100%;margin-top:var(--space-2);min-height:var(--target);
+ padding:var(--space-3) var(--space-4);font:inherit;font-size:var(--fs-base);
+ color:var(--text-primary);background:var(--neutral-0);
+ border:1px solid var(--neutral-450);border-radius:8px}
+.field textarea{min-height:120px;resize:vertical}
+.field :is(input,select,textarea):focus-visible{outline:var(--bw-focus) solid
+ var(--border-focus);outline-offset:2px}
+.fcard .btn--block{margin-top:var(--space-6)}
+.fcard__acts{display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)}
+.fcard__fine{margin-top:var(--space-4);font-size:var(--fs-xs);color:var(--text-muted);
+ text-align:center}
+.fcard__fine--l{text-align:left}
+/* copy left, form card right — Contact and Careers draw the same split */
+.fsplit{display:grid;grid-template-columns:1fr;gap:var(--space-6);align-items:start}@media(min-width:960px){
+
+.fcard{padding:var(--space-7)}
+.fsplit{grid-template-columns:minmax(0,488px) minmax(0,639px);gap:88px}}
+
+/* album card — shared by News & Events and Gallery */
+.album{background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px;overflow:hidden}
+.album__a{display:block;text-decoration:none;color:inherit;
+ transition:transform var(--dur-base) var(--ease),
+            box-shadow var(--dur-base) var(--ease)}
+.album__a:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.album__a:focus-visible{outline:var(--bw-focus) solid var(--border-focus);
+ outline-offset:3px}
+.album .ph{aspect-ratio:4/3;border-radius:0;padding:var(--space-4)}
+.album__b{display:block;padding:var(--space-4) var(--space-5) var(--space-5)}
+.album__n{display:block;font-weight:700}
+.album__y{display:block;margin-top:var(--space-1);font-size:var(--fs-sm);
+ color:var(--text-secondary)}
+/* two more band fills, shared by Achievements and About */
+.sec--alt{background:var(--neutral-50,#F8F8F7)}
+.sec--rose{background:#FBEEED}
+/* the competitions pathway — shared by Academics and Achievements */
+.route4{display:grid;grid-template-columns:1fr;gap:var(--space-3);
+ list-style:none;margin:var(--space-6) 0 0;padding:0}
+.rstep{padding:var(--space-4);background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:10px}
+.rstep--end{background:var(--navy-700);border-color:var(--navy-700);color:var(--neutral-0)}
+.rstep__n{display:block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--text-muted)}
+.rstep--end .rstep__n{color:var(--brand-200)}
+.rstep__h{display:block;margin-top:var(--space-2);font-weight:700}
+.rstep__s{display:block;margin-top:2px;font-size:var(--fs-xs);color:var(--text-secondary)}
+.rstep--end .rstep__s{color:var(--brand-200)}
+.route__after{margin-top:var(--space-5);color:var(--text-secondary)}
+@media(min-width:720px){.route4{grid-template-columns:repeat(4,1fr)}}
+
+
+/* ===========================================================================
+   LAYER 2 — PER PAGE
+   Three of these blocks serve two pages each, because one builder writes the
+   same CSS to both. index.html (.p-home) has no rules of its own: everything
+   the home page uses is shared.
+   =========================================================================== */
+
+
+/* --- admissions.html --- */
+
+/* ===== ADMISSIONS PAGE =====
+ Built from the supplied 1440 and 320 concepts. Section order and backgrounds
+ measured off the desktop file: hero white, process white, fees #F8F8F7, book a
+ visit #EFF5FA, FAQs white, enquire #F8F8F7.
+
+ Both forms post to "#" - there is no endpoint yet. Every field has a real
+ label, the radio groups are fieldsets with legends, and the FAQ list is
+ <details>, so the page works with no JavaScript at all. */
+.p-admissions .phero{padding-top:var(--space-8);background:var(--neutral-0);
+ background-image:url("../img/levels-ridge-top-phone.svg");
+ background-repeat:no-repeat;background-position:right top;background-size:170px auto}
+.p-admissions .phero h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:14ch}
+.p-admissions .anchors{margin-top:var(--space-7);border-top:1px solid var(--border-default);
+ border-bottom:1px solid var(--border-default)}
+.p-admissions .anchors ul{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-6);
+ list-style:none;margin:0;padding:0}
+.p-admissions .anchors a{display:inline-flex;align-items:center;min-height:var(--target);
+ color:var(--text-secondary);text-decoration:none}
+.p-admissions .anchors a:hover{color:var(--ink-nav);text-decoration:underline;text-underline-offset:3px}
+
+.p-admissions .split{display:grid;grid-template-columns:1fr;gap:var(--space-7)}
+.p-admissions .split__l .sec__lead{margin-top:var(--space-4)}
+.p-admissions .split__l .kicker{margin-bottom:var(--space-3)}
+
+.p-admissions .note{display:flex;gap:var(--space-3);margin-top:var(--space-5);
+ padding:var(--space-4);border-radius:10px;color:var(--text-secondary)}
+.p-admissions .note .ico{flex:none;margin-top:2px;color:var(--ink-nav)}
+.p-admissions .note--info{background:var(--bg-brand-subtle)}
+.p-admissions .note--ok{background:var(--bg-brand-subtle);margin-top:var(--space-4)}
+
+/* the five steps */
+.p-admissions .steps{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-8)}
+.p-admissions .step{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr);
+ gap:var(--space-4)}
+.p-admissions .step::before{content:"";position:absolute;left:21px;top:48px;bottom:calc(var(--space-8) * -1);
+ width:1.5px;background:var(--rail)}
+.p-admissions .step--last::before{display:none}
+.p-admissions .step__mark{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--rail);
+ display:flex;align-items:center;justify-content:center;background:var(--neutral-0);
+ color:var(--ink-nav);position:relative;z-index:1}
+.p-admissions .step--last .step__mark{background:var(--ink-nav);border-color:var(--ink-nav);
+ color:var(--neutral-0)}
+.p-admissions .step__h{font-size:var(--fs-lg);font-weight:700}
+.p-admissions .step__p{margin-top:var(--space-2);color:var(--text-secondary)}
+.p-admissions .step__acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3) var(--space-5);
+ margin-top:var(--space-4)}
+.p-admissions .step__ph{margin-top:var(--space-4);aspect-ratio:3/2;border-radius:10px}
+
+/* fees */
+.p-admissions .fees{display:grid;grid-template-columns:1fr;gap:var(--space-6)}
+.p-admissions .fees__h{font-size:var(--fs-base);font-weight:700;padding-bottom:var(--space-3);
+ border-bottom:2px solid var(--ink-nav)}
+.p-admissions .fees__col ul{list-style:none;margin:0;padding:0}
+.p-admissions .fees__col li{display:flex;align-items:center;gap:var(--space-3);
+ padding:var(--space-4) 0;border-bottom:1px solid var(--border-default)}
+.p-admissions .fees__y,
+.p-admissions .fees__n{flex:none;width:20px;text-align:center;font-weight:700;
+ color:var(--ink-nav)}
+.p-admissions .fees__fine{margin-top:var(--space-5);font-size:var(--fs-xs);color:var(--text-muted);
+ max-width:52ch}
+
+/* book a visit */
+.p-admissions .visit__h{margin-top:var(--space-6);font-size:var(--fs-base);font-weight:700}
+.p-admissions .visit__p{margin-top:var(--space-2);color:var(--text-secondary)}
+.p-admissions .visit__ph{aspect-ratio:3/2;border-radius:12px}
+.p-admissions .bookrow{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ margin-top:var(--space-8)}
+.p-admissions .phonecard{background:var(--navy-700);color:var(--neutral-0);border-radius:12px;
+ padding:var(--space-6)}
+.p-admissions .phonecard .ico--lg{width:32px;height:32px;color:var(--neutral-0)}
+.p-admissions .phonecard__h{margin-top:var(--space-5);font-size:var(--fs-lg);font-weight:700}
+.p-admissions .phonecard__btn{display:flex;align-items:center;justify-content:center;
+ min-height:var(--target);margin-top:var(--space-4);padding:0 var(--space-5);
+ background:var(--neutral-0);color:var(--ink-nav);border-radius:8px;
+ font-weight:700;text-decoration:none}
+.p-admissions .phonecard__btn:hover{background:var(--brand-200)}
+.p-admissions .phonecard__btn:focus-visible{outline:var(--bw-focus) solid var(--neutral-0);
+ outline-offset:2px}
+.p-admissions .phonecard__p{margin-top:var(--space-4);font-size:var(--fs-xs);color:var(--brand-200)}
+
+/* forms */
+/* .fcard / .field / .hint / .opt and the input styling live in the
+   shared shell now — Contact uses the same primitives. */
+.p-admissions .fgrid{display:grid;grid-template-columns:1fr;gap:var(--space-5)}
+.p-admissions .chips{display:flex;flex-wrap:wrap;gap:var(--space-3)}
+.p-admissions .chips legend{width:100%;margin-bottom:var(--space-2)}
+.p-admissions .chip{display:inline-flex;align-items:center;gap:var(--space-2);min-height:var(--target);
+ padding:0 var(--space-4);border:1px solid var(--neutral-450);border-radius:8px;
+ cursor:pointer}
+.p-admissions .chip input{margin:0;width:18px;height:18px;accent-color:var(--ink-nav)}
+.p-admissions .chip:has(input:checked){border-color:var(--ink-nav);box-shadow:inset 0 0 0 1px var(--ink-nav)}
+.p-admissions .chip:has(input:focus-visible){outline:var(--bw-focus) solid var(--border-focus);
+ outline-offset:2px}
+.p-admissions .campus__opts{display:grid;grid-template-columns:1fr;gap:var(--space-3);
+ margin-top:var(--space-3)}
+.p-admissions .optcard{display:flex;align-items:flex-start;gap:var(--space-3);
+ padding:var(--space-4);border:1px solid var(--neutral-450);border-radius:8px;
+ cursor:pointer}
+.p-admissions .optcard input{margin:2px 0 0;width:18px;height:18px;flex:none;accent-color:var(--ink-nav)}
+.p-admissions .optcard:has(input:checked){border-color:var(--ink-nav);
+ box-shadow:inset 0 0 0 1px var(--ink-nav)}
+.p-admissions .optcard:has(input:focus-visible){outline:var(--bw-focus) solid var(--border-focus);
+ outline-offset:2px}
+.p-admissions .optcard__n{display:block;font-weight:700}
+.p-admissions .optcard__s{display:block;margin-top:2px;font-size:var(--fs-xs);color:var(--text-secondary)}
+
+/* questions */
+.p-admissions .qs{display:grid}
+.p-admissions .q{border-top:1px solid var(--border-default)}
+.p-admissions .q:last-of-type{border-bottom:1px solid var(--border-default)}
+.p-admissions .q>summary{display:flex;align-items:center;justify-content:space-between;
+ gap:var(--space-4);min-height:var(--target);padding:var(--space-4) 0;
+ font-weight:700;cursor:pointer;list-style:none}
+.p-admissions .q>summary::-webkit-details-marker{display:none}
+.p-admissions .q>summary:focus-visible{outline:var(--bw-focus) solid var(--border-focus);
+ outline-offset:2px}
+.p-admissions .q__m{flex:none;position:relative;width:32px;height:32px;border-radius:50%;
+ border:1px solid var(--border-default)}
+.p-admissions .q__m::before,
+.p-admissions .q__m::after{content:"";position:absolute;left:50%;top:50%;
+ background:var(--ink-nav);transform:translate(-50%,-50%)}
+.p-admissions .q__m::before{width:12px;height:1.5px}
+.p-admissions .q__m::after{width:1.5px;height:12px}
+.p-admissions .q[open] .q__m::after{display:none}
+.p-admissions .q__a{padding:0 0 var(--space-5);color:var(--text-secondary);max-width:62ch}
+.p-admissions .q__a p+p{margin-top:var(--space-4)}
+
+@media(min-width:640px){
+ .p-admissions .fees{grid-template-columns:1fr 1fr;gap:var(--space-7)}
+ .p-admissions .campus__opts{grid-template-columns:1fr 1fr}
+ .p-admissions .fgrid{grid-template-columns:1fr 1fr;gap:var(--space-5) var(--space-6)}
+ .p-admissions .fgrid>.field:nth-child(3){grid-column:1}
+}
+@media(min-width:960px){
+ .p-admissions .phero{padding-top:var(--space-9);
+  background-image:url("../img/levels-ridge-top.svg");
+  background-size:min(560px,calc(50% - 48px)) auto}
+ .p-admissions .phero h1{font-size:var(--fs-4xl)}
+ .p-admissions .split{grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:var(--space-8)}
+ .p-admissions .split>.split__l{grid-row:span 2}
+ .p-admissions #fees .split,
+.p-admissions #faqs .split,
+.p-admissions #enquiry .split{align-items:start}
+ .p-admissions .bookrow{grid-template-columns:360px minmax(0,1fr);gap:var(--space-5)}
+}
+@media(min-width:1180px){
+ .p-admissions .split{grid-template-columns:minmax(0,460px) minmax(0,1fr);gap:88px}
+}
+
+
+/* --- early-years.html --- */
+
+/* ===== LEVEL PAGE — shared by Early Years, Grade School, High School =====
+ Bands from the 1440 mockup. The hero is photograph-left, text-right with the
+ three level pills above the H1; the stages are a card grid where a card runs
+ without a photograph rather than with a stock one; the day is a horizontal
+ timeline that turns vertical below the desktop breakpoint, because seven
+ points will not sit side by side at 320.
+
+ The curly-brace tokens are unwritten copy, shown rather than hidden so the
+ gaps are visible: the one-line stage descriptions, the timeline times and the
+ teacher names are all still to come from the school. */
+.p-early-years .lvhero{padding-bottom:var(--space-8)}
+.p-early-years .lvhero__g{display:grid;grid-template-columns:1fr;gap:var(--space-7);align-items:center}
+.p-early-years .lvhero__ph{aspect-ratio:4/3;border-radius:12px;justify-content:space-between;
+ padding:var(--space-6)}
+.p-early-years .ph__face{width:92px;height:92px;border:2px dashed var(--neutral-450);border-radius:50%;
+ display:flex;align-items:center;justify-content:center;font-size:var(--fs-xs);
+ color:var(--text-muted);margin:auto}
+.p-early-years .ph__cap{display:block}
+.p-early-years .pills ul{display:flex;flex-wrap:wrap;gap:var(--space-3);list-style:none;margin:0;padding:0}
+.p-early-years .pill{display:inline-flex;align-items:center;min-height:var(--target);
+ padding:0 var(--space-5);border:1px solid var(--border-default);border-radius:100px;
+ color:var(--text-secondary);text-decoration:none}
+.p-early-years .pill:hover{border-color:var(--ink-nav);color:var(--ink-nav)}
+.p-early-years .pill--on{border-color:var(--ink-nav);background:var(--bg-brand-subtle);
+ color:var(--ink-nav);font-weight:700}
+.p-early-years .pill:focus-visible{outline:var(--bw-focus) solid var(--border-focus);outline-offset:2px}
+.p-early-years .lvhero h1{margin-top:var(--space-5);font-size:clamp(1.9rem,1.25rem + 2.8vw,3.0625rem);
+ line-height:1.1}
+.p-early-years .lvhero__lead{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:46ch}
+.p-early-years .lvhero__p{margin-top:var(--space-4);color:var(--text-secondary);max-width:52ch}
+.p-early-years .lvhero__acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-4) var(--space-5);
+ margin-top:var(--space-6)}
+.p-early-years .lvhero__at{display:inline-flex;align-items:center;gap:var(--space-2);
+ font-size:var(--fs-xs);font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+ color:var(--text-secondary)}
+.p-early-years .lvhero__at .ico{color:var(--ink-nav)}
+
+/* unwritten copy */
+.p-early-years .tok{display:inline-block;padding:1px 6px;border-radius:4px;
+ background:var(--neutral-100,#F1F1F0);color:var(--text-muted);font-size:var(--fs-xs)}
+
+/* the six stages */
+.p-early-years .stages{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0;padding:0;counter-reset:none}
+.p-early-years .stage{display:flex;flex-direction:column;background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:12px;overflow:hidden}
+.p-early-years .stage__ph{aspect-ratio:3/2;border-radius:0;padding:var(--space-4)}
+.p-early-years .stage__b{padding:var(--space-5)}
+.p-early-years .stage__n{font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--text-muted)}
+.p-early-years .stage__h{margin-top:var(--space-2);font-size:var(--fs-lg);font-weight:700}
+.p-early-years .stage__a{margin-top:2px;font-weight:700;color:var(--ink-nav)}
+.p-early-years .stage__b .tok{margin-top:var(--space-3)}
+.p-early-years .stage__note{margin-top:var(--space-4);padding-top:var(--space-4);
+ border-top:1px dashed var(--border-default);font-size:var(--fs-xs);
+ color:var(--text-muted)}
+
+/* what they learn */
+.p-early-years .subj{display:grid;grid-template-columns:1fr;list-style:none;margin:0;padding:0}
+.p-early-years .subj li{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) 0;
+ border-bottom:1px solid var(--border-default)}
+.p-early-years .subj li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;
+ background:var(--ink-nav)}
+.p-early-years .subj__fine{margin-top:var(--space-4);font-size:var(--fs-xs);color:var(--text-muted)}
+
+/* a morning */
+.p-early-years .day__ph{aspect-ratio:3/2;border-radius:12px;padding:var(--space-5)}
+.p-early-years .tl{display:grid;grid-template-columns:1fr;gap:var(--space-5);list-style:none;
+ margin:var(--space-8) 0 0;padding:0}
+.p-early-years .tl__i{position:relative;display:grid;grid-template-columns:20px minmax(0,1fr);
+ gap:var(--space-3);align-items:start}
+.p-early-years .tl__i::before{content:"";position:absolute;left:9px;top:20px;bottom:calc(var(--space-5) * -1);
+ width:1.5px;background:var(--rail)}
+.p-early-years .tl__i--last::before{display:none}
+.p-early-years .tl__d{grid-row:1;grid-column:1;width:14px;height:14px;margin-top:4px;border-radius:50%;
+ border:2px solid var(--ink-nav);background:var(--neutral-0);position:relative;z-index:1}
+.p-early-years .tl__i--last .tl__d{background:var(--ink-nav)}
+.p-early-years .tl__i .tok{grid-row:1;grid-column:2}
+.p-early-years .tl__l{grid-row:2;grid-column:2;font-weight:700}
+.p-early-years .day__cta{margin-top:var(--space-7)}
+
+@media(min-width:640px){
+ .p-early-years .stages{grid-template-columns:1fr 1fr}
+ .p-early-years .subj{grid-template-columns:1fr 1fr;column-gap:var(--space-7)}
+}
+@media(min-width:960px){
+ .p-early-years .lvhero__g{grid-template-columns:624fr 700fr;gap:var(--space-8)}
+ .p-early-years .stages{grid-template-columns:repeat(3,1fr);gap:var(--space-5)}
+ .p-early-years .split--rev{grid-template-columns:minmax(0,1fr) minmax(0,460px)}
+ .p-early-years .split--rev>.split__l{order:2}
+ .p-early-years .camp--solo{border:0;background:none}
+ /* the day becomes a true horizontal timeline */
+ .p-early-years .tl{grid-template-columns:repeat(7,1fr);gap:0;margin-top:var(--space-9)}
+ .p-early-years .tl__i{display:block;padding-right:var(--space-4)}
+ .p-early-years .tl__i::before{left:7px;right:calc(var(--space-4) * -1);top:auto;bottom:auto;
+  width:auto;height:1.5px;transform:translateY(30px)}
+ .p-early-years .tl__i--last::before{display:none}
+ .p-early-years .tl__d{display:block;margin:var(--space-2) 0 0}
+ .p-early-years .tl__l{display:block;margin-top:var(--space-3)}
+}
+
+
+/* --- grade-school.html + high-school.html  (identical CSS, written once) --- */
+
+/* ===== YEAR GROUPS — the rising staircase =====
+ Cards sit on a common baseline and each is taller than the last, so the run
+ reads as a child climbing through the school. The final card is outlined in
+ navy; a navy card alongside says what comes after it. High School splits the
+ run under two bracket rails, Junior and Senior, and the senior run keeps
+ climbing rather than restarting.
+
+ The staircase is desktop only. At 320 six cards of different heights is just
+ an untidy column, so they flatten to an even two-up grid. */
+.p-grade-school .years,
+.p-high-school .years{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);
+ list-style:none;margin:0;padding:0}
+.p-grade-school .yr,
+.p-high-school .yr{display:flex;flex-direction:column;justify-content:flex-end;
+ padding:var(--space-4);background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:10px}
+.p-grade-school .yr--last,
+.p-high-school .yr--last{border-color:var(--ink-nav);border-width:1.5px}
+.p-grade-school .yr__n,
+.p-high-school .yr__n{font-size:var(--fs-xs);color:var(--text-muted)}
+.p-grade-school .yr__h,
+.p-high-school .yr__h{margin-top:2px;font-size:var(--fs-lg);font-weight:700}
+.p-grade-school .yrgrp,
+.p-high-school .yrgrp{margin-top:var(--space-6)}
+.p-grade-school .yrgrp:first-child,
+.p-high-school .yrgrp:first-child{margin-top:0}
+.p-grade-school .yrgrp__k,
+.p-high-school .yrgrp__k{font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--text-secondary);margin-bottom:var(--space-2)}
+.p-grade-school .yrgrp__rail,
+.p-high-school .yrgrp__rail{height:11px;border:1.5px solid var(--rail);border-bottom:0;
+ border-radius:10px 10px 0 0;margin-bottom:var(--space-3)}
+.p-grade-school .next,
+.p-high-school .next{margin-top:var(--space-5);background:var(--navy-700);color:var(--neutral-0);
+ border-radius:12px;padding:var(--space-5);display:flex;flex-direction:column;
+ justify-content:center}
+.p-grade-school .next__k,
+.p-high-school .next__k{font-size:var(--fs-xs);font-weight:700;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--brand-200)}
+.p-grade-school .next__h,
+.p-high-school .next__h{margin-top:var(--space-3);font-size:var(--fs-xl);font-weight:700}
+.p-grade-school .next__p,
+.p-high-school .next__p{margin-top:var(--space-3);color:var(--neutral-0)}
+.p-grade-school .next__a,
+.p-high-school .next__a{display:inline-flex;align-items:center;gap:var(--space-2);
+ min-height:var(--target);margin-top:var(--space-4);color:var(--neutral-0);
+ font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.p-grade-school .next__a:focus-visible,
+.p-high-school .next__a:focus-visible{outline:var(--bw-focus) solid var(--neutral-0);outline-offset:2px}
+.p-grade-school .yearsrow,
+.p-high-school .yearsrow{display:grid;grid-template-columns:1fr;gap:var(--space-5)}
+@media(min-width:960px){
+ .p-grade-school .yearsrow,
+.p-high-school .yearsrow{grid-template-columns:minmax(0,1fr) 320px;gap:var(--space-5);
+  align-items:end}
+ .p-grade-school .years,
+.p-high-school .years{display:flex;align-items:flex-end;gap:12px}
+ .p-grade-school .yr,
+.p-high-school .yr{flex:1;min-height:calc(104px + (var(--step) - 1) * 22px)}
+ .p-grade-school .next,
+.p-high-school .next{margin-top:0;min-height:240px}
+ .p-grade-school .yrgrp,
+.p-high-school .yrgrp{margin-top:0}
+ .p-grade-school .yrgroups,
+.p-high-school .yrgroups{display:flex;align-items:flex-end;gap:var(--space-6)}
+ .p-grade-school .yrgroups>.yrgrp,
+.p-high-school .yrgroups>.yrgrp{flex:1}
+}
+
+
+/* --- academics.html + people.html  (identical CSS, written once) --- */
+
+/* ===== ACADEMICS + OUR PEOPLE =====
+ Shapes measured off their own 1440 mockups. Academics puts its hero
+ photograph on the right and the route photograph on the left; Our People runs
+ three teacher groups under one heading each, with a statistic card beside the
+ "how we know your child" copy.
+
+ Every {curly token} is copy the school has not supplied. Shown rather than
+ hidden so the gaps are countable. */
+.p-academics .phero2,
+.p-people .phero2{padding-top:var(--space-8);
+ background-image:url("../img/levels-ridge-top-phone.svg");
+ background-repeat:no-repeat;background-position:right top;background-size:170px auto}
+.p-academics .phero2 h1,
+.p-people .phero2 h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:16ch}
+.p-academics .phero2__lead,
+.p-people .phero2__lead{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:50ch}
+
+/* level cards (Academics block 2) */
+.p-academics .lvcards,
+.p-people .lvcards{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0;padding:0}
+.p-academics .lvcard,
+.p-people .lvcard{display:flex}
+.p-academics .lvcard__a,
+.p-people .lvcard__a{display:flex;flex-direction:column;width:100%;background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:12px;overflow:hidden;
+ text-decoration:none;color:inherit;
+ transition:transform var(--dur-base) var(--ease),box-shadow var(--dur-base) var(--ease)}
+.p-academics .lvcard__a:hover,
+.p-people .lvcard__a:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.p-academics .lvcard__a:focus-visible,
+.p-people .lvcard__a:focus-visible{outline:var(--bw-focus) solid var(--border-focus);outline-offset:3px}
+.p-academics .lvcard .ph,
+.p-people .lvcard .ph{aspect-ratio:3/2;border-radius:0;padding:var(--space-4)}
+.p-academics .lvcard__b,
+.p-people .lvcard__b{display:block;padding:var(--space-5)}
+.p-academics .lvcard__h,
+.p-people .lvcard__h{display:block;font-size:var(--fs-lg);font-weight:700}
+.p-academics .lvcard__s,
+.p-people .lvcard__s{display:block;margin-top:var(--space-2);color:var(--text-secondary)}
+.p-academics .lvcard__c,
+.p-people .lvcard__c{display:inline-flex;align-items:center;gap:var(--space-2);
+ margin-top:var(--space-4);font-weight:700;color:var(--ink-nav)}
+
+/* beyond the classroom */
+.p-academics .enrich,
+.p-people .enrich{display:grid;grid-template-columns:1fr;gap:var(--space-6);
+ list-style:none;margin:0;padding:0}
+.p-academics .enrich .ph,
+.p-people .enrich .ph{aspect-ratio:16/9;border-radius:12px;padding:var(--space-4)}
+.p-academics .enrich__cap,
+.p-people .enrich__cap{margin-top:var(--space-3);font-size:var(--fs-xs);color:var(--text-muted)}
+.p-academics .enrich__h,
+.p-people .enrich__h{margin-top:var(--space-2);font-size:var(--fs-lg);font-weight:700}
+.p-academics .enrich__p,
+.p-people .enrich__p{margin-top:var(--space-2);color:var(--text-secondary)}
+
+/* the route: .route4 / .rstep live in the shared shell — Achievements uses
+   them too, so they moved to index.html rather than being defined twice */
+
+/* our people */
+.p-academics .pgroup,
+.p-people .pgroup{margin-top:var(--space-8)}
+.p-academics .pgroup:first-of-type,
+.p-people .pgroup:first-of-type{margin-top:var(--space-7)}
+.p-academics .pgroup__h,
+.p-people .pgroup__h{font-size:var(--fs-lg);font-weight:700;padding-bottom:var(--space-3);
+ border-bottom:1px solid var(--border-default)}
+.p-academics .pgroup .people,
+.p-people .pgroup .people{margin-top:var(--space-5)}
+.p-academics .person__l,
+.p-people .person__l{margin-top:var(--space-2);font-size:var(--fs-xs);color:var(--text-secondary)}
+.p-academics .statcard,
+.p-people .statcard{background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px;padding:var(--space-6)}
+.p-academics .statcard__n,
+.p-people .statcard__n{display:inline-block;font-size:var(--fs-3xl);font-weight:700;
+ color:var(--accent-500);background:var(--neutral-100,#F1F1F0);
+ padding:2px 10px;border-radius:6px}
+.p-academics .statcard__h,
+.p-people .statcard__h{margin-top:var(--space-3);font-size:var(--fs-lg);font-weight:700}
+.p-academics .statcard__p,
+.p-people .statcard__p{margin-top:var(--space-2);color:var(--text-secondary)}
+.p-academics .statcard__f,
+.p-people .statcard__f{margin-top:var(--space-5);padding-top:var(--space-4);
+ border-top:1px solid var(--border-default);font-size:var(--fs-xs);
+ color:var(--text-muted)}
+.p-academics .leads,
+.p-people .leads{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:var(--space-6) 0 0;padding:0}
+.p-academics .lead,
+.p-people .lead{display:grid;grid-template-columns:96px minmax(0,1fr);gap:var(--space-4);
+ align-items:start}
+.p-academics .lead .ph,
+.p-people .lead .ph{aspect-ratio:4/5;border-radius:10px;padding:var(--space-2)}
+.p-academics .lead__n,
+.p-people .lead__n{font-weight:700}
+.p-academics .lead__r,
+.p-people .lead__r{margin-top:2px;font-weight:700;color:var(--ink-nav)}
+.p-academics .lead__l,
+.p-people .lead__l{margin-top:var(--space-2);font-size:var(--fs-xs);color:var(--text-secondary)}
+
+@media(min-width:640px){
+ .p-academics .lvcards,
+.p-people .lvcards{grid-template-columns:repeat(3,1fr)}
+ .p-academics .route4,
+.p-people .route4{grid-template-columns:1fr 1fr}
+ .p-academics .leads,
+.p-people .leads{grid-template-columns:repeat(3,1fr)}
+}
+@media(min-width:960px){
+ .p-academics .phero2,
+.p-people .phero2{padding-top:var(--space-9);
+  background-image:url("../img/levels-ridge-top.svg");
+  background-size:min(430px,calc(50% - 48px)) auto}
+ .p-academics .enrich,
+.p-people .enrich{grid-template-columns:repeat(6,1fr);gap:var(--space-6) var(--space-5)}
+ .p-academics .enrich>li,
+.p-people .enrich>li{grid-column:span 2}
+ .p-academics .enrich>li:nth-child(1),
+.p-academics .enrich>li:nth-child(2),
+.p-people .enrich>li:nth-child(1),
+.p-people .enrich>li:nth-child(2){grid-column:span 3}
+ .p-academics .route4,
+.p-people .route4{grid-template-columns:repeat(4,1fr)}
+}
+
+
+/* --- school-life.html + achievements.html  (identical CSS, written once) --- */
+
+/* ===== SCHOOL LIFE + ACHIEVEMENTS =====
+ Shapes measured off their own 1440 mockups. School Life runs the day as a
+ VERTICAL timeline on desktop — the mockup draws it that way and the mockup is
+ the brief, so Item 5's horizontal-on-desktop note is logged rather than
+ followed. Achievements carries more placeholder figures than any other page;
+ every one of them is a visible {token} so the gaps stay countable. */
+
+/* ---------- shared page hero (no photograph, ridgeline top-right) ---------- */
+.p-school-life .phero3,
+.p-achievements .phero3{padding-top:var(--space-8);
+ background-image:url("../img/levels-ridge-top-phone.svg");
+ background-repeat:no-repeat;background-position:right top;background-size:170px auto}
+.p-school-life .phero3 h1,
+.p-achievements .phero3 h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:17ch}
+.p-school-life .phero3__lead,
+.p-achievements .phero3__lead{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:52ch}
+
+/* ---------- School Life: the day, as a vertical timeline ---------- */
+.p-school-life .sltl,
+.p-achievements .sltl{list-style:none;margin:var(--space-8) 0 0;padding:0}
+.p-school-life .sltl__i,
+.p-achievements .sltl__i{position:relative;display:grid;grid-template-columns:20px 1fr;
+ column-gap:var(--space-4);padding-bottom:var(--space-7)}
+.p-school-life .sltl__i:last-child,
+.p-achievements .sltl__i:last-child{padding-bottom:0}
+/* The rail is absolutely positioned on the stop rather than placed as a grid
+   item: a grid child cannot reach into the item's own bottom padding, so a
+   grid-placed rail leaves a gap between every stop. The last stop draws none. */
+.p-school-life .sltl__i::before,
+.p-achievements .sltl__i::before{content:"";position:absolute;left:9px;top:12px;bottom:0;
+ width:2px;background:var(--rail,#B2A9D6)}
+.p-school-life .sltl__i:last-child::before,
+.p-achievements .sltl__i:last-child::before{display:none}
+.p-school-life .sltl__dot,
+.p-achievements .sltl__dot{grid-column:1;grid-row:1;align-self:start;justify-self:center;
+ width:14px;height:14px;margin-top:5px;border-radius:50%;
+ background:var(--neutral-0);border:3px solid var(--navy-700);position:relative;z-index:1}
+/* phone: chip on row 1, the rest beneath it, both in the content column */
+.p-school-life .sltl__c,
+.p-achievements .sltl__c{grid-column:2;grid-row:2}
+/* justify-self AND align-self: a grid item stretches in both axes by default,
+   which turns the time chip into a full-height pill */
+.p-school-life .sltl__t,
+.p-achievements .sltl__t{grid-column:2;grid-row:1;justify-self:start;align-self:start;
+ margin-bottom:var(--space-2);
+ display:inline-block;font-size:var(--fs-xs);font-weight:700;
+ letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);
+ background:var(--neutral-100,#F0F0EF);padding:3px 10px;border-radius:999px}
+.p-school-life .sltl__h,
+.p-achievements .sltl__h{font-size:var(--fs-lg);font-weight:700}
+.p-school-life .sltl__p,
+.p-achievements .sltl__p{margin-top:var(--space-2);color:var(--text-secondary);max-width:62ch}
+.p-school-life .sltl__ph,
+.p-achievements .sltl__ph{margin-top:var(--space-4);max-width:560px}
+.p-school-life .sltl__ph .ph,
+.p-achievements .sltl__ph .ph{aspect-ratio:16/9;border-radius:12px;padding:var(--space-4)}
+.p-school-life .sltl__note,
+.p-achievements .sltl__note{margin-top:var(--space-7);color:var(--text-secondary)}
+
+/* ---------- School Life: facilities ---------- */
+.p-school-life .facs,
+.p-achievements .facs{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0;padding:0}
+.p-school-life .fac,
+.p-achievements .fac{background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px;overflow:hidden}
+.p-school-life .fac .ph,
+.p-achievements .fac .ph{aspect-ratio:16/9;border-radius:0;padding:var(--space-3)}
+.p-school-life .fac__b,
+.p-achievements .fac__b{padding:var(--space-4)}
+.p-school-life .fac__h,
+.p-achievements .fac__h{font-weight:700}
+.p-school-life .fac__p,
+.p-achievements .fac__p{margin-top:var(--space-2);font-size:var(--fs-sm);color:var(--text-secondary)}
+.p-school-life .facs__after,
+.p-achievements .facs__after{display:flex;flex-wrap:wrap;align-items:baseline;
+ justify-content:space-between;gap:var(--space-3);margin-top:var(--space-6)}
+.p-school-life .facs__after p,
+.p-achievements .facs__after p{color:var(--text-secondary);margin:0}
+
+/* ---------- School Life: through the year ---------- */
+.p-school-life .thru,
+.p-achievements .thru{display:grid;grid-template-columns:1fr;gap:var(--space-6);align-items:start}
+.p-school-life .thru__strip,
+.p-achievements .thru__strip{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+ list-style:none;margin:0;padding:0}
+.p-school-life .thru__strip .ph,
+.p-achievements .thru__strip .ph{aspect-ratio:3/4;border-radius:10px;padding:var(--space-3)}
+.p-school-life .thru__cap,
+.p-achievements .thru__cap{margin-top:var(--space-2);font-size:var(--fs-xs);color:var(--text-muted)}
+
+/* ---------- Achievements: spotlight ---------- */
+.p-school-life .spot__p,
+.p-achievements .spot__p{margin-top:var(--space-4);font-size:var(--fs-lg);color:var(--text-secondary)}
+.p-school-life .spot__p b,
+.p-achievements .spot__p b{color:var(--text-primary)}
+.p-school-life .spot__p2,
+.p-achievements .spot__p2{margin-top:var(--space-4);font-size:var(--fs-lg);color:var(--ink-nav)}
+.p-school-life .spot__fig,
+.p-achievements .spot__fig{margin:0}
+.p-school-life .spot__fig .ph,
+.p-achievements .spot__fig .ph{aspect-ratio:4/5;border-radius:12px;padding:var(--space-5)}
+.p-school-life .spot__cap,
+.p-achievements .spot__cap{margin-top:var(--space-3);font-size:var(--fs-xs);color:var(--text-muted)}
+.p-school-life .hr__fig,
+.p-achievements .hr__fig{margin:0}
+.p-school-life .hr__fig .ph,
+.p-achievements .hr__fig .ph{aspect-ratio:16/9;border-radius:12px;padding:var(--space-5)}
+
+/* ---------- Achievements: Honour Roll ---------- */
+.p-school-life .hrsplit,
+.p-achievements .hrsplit{display:grid;grid-template-columns:1fr;gap:var(--space-7)}
+.p-school-life .hr__cols,
+.p-achievements .hr__cols{display:grid;grid-template-columns:1fr;gap:var(--space-6);
+ margin-top:var(--space-7)}
+.p-school-life .hr__h,
+.p-achievements .hr__h{font-size:var(--fs-lg);font-weight:700;padding-bottom:var(--space-3);
+ border-bottom:2px solid var(--navy-700)}
+.p-school-life .hr__l,
+.p-achievements .hr__l{list-style:none;margin:0;padding:0}
+.p-school-life .hr__r,
+.p-achievements .hr__r{display:flex;align-items:baseline;justify-content:space-between;
+ gap:var(--space-3);padding:var(--space-3) 0;
+ border-bottom:1px solid var(--border-default)}
+.p-school-life .hr__n,
+.p-achievements .hr__n{font-weight:700}
+.p-school-life .hr__v,
+.p-achievements .hr__v{font-size:var(--fs-xs);color:var(--text-secondary)}
+.p-school-life .hr__note,
+.p-achievements .hr__note{margin-top:var(--space-5);font-size:var(--fs-sm);color:var(--text-secondary)}
+
+/* ---------- Achievements: competitions ---------- */
+/* .sec--alt and .sec--rose live in the shared shell — About uses them too */
+.p-school-life .comp,
+.p-achievements .comp{display:grid;grid-template-columns:1fr;gap:var(--space-6);align-items:start}
+.p-school-life .comp__fig,
+.p-achievements .comp__fig{margin:0}
+.p-school-life .comp__fig .ph,
+.p-achievements .comp__fig .ph{aspect-ratio:4/3;border-radius:12px;padding:var(--space-5)}
+
+/* ---------- Achievements: results ---------- */
+.p-school-life .res,
+.p-achievements .res{display:grid;grid-template-columns:1fr;gap:var(--space-6);align-items:start}
+.p-school-life .figs,
+.p-achievements .figs{display:grid;grid-template-columns:1fr;gap:var(--space-4);
+ list-style:none;margin:var(--space-6) 0 0;padding:0}
+.p-school-life .fig,
+.p-achievements .fig{padding:var(--space-5);border:1px dashed var(--neutral-450,#8A8A87);
+ border-radius:12px}
+.p-school-life .fig__n,
+.p-achievements .fig__n{display:block;font-size:var(--fs-3xl);font-weight:700;line-height:1.05}
+.p-school-life .fig__l,
+.p-achievements .fig__l{display:block;margin-top:var(--space-3);font-size:var(--fs-sm);
+ color:var(--text-secondary)}
+.p-school-life .res__fine,
+.p-achievements .res__fine{margin-top:var(--space-3);font-size:var(--fs-xs);color:var(--text-muted)}
+.p-school-life .res__h3,
+.p-achievements .res__h3{margin-top:var(--space-7);font-size:var(--fs-lg);font-weight:700}
+.p-school-life .dests,
+.p-achievements .dests{display:grid;grid-template-columns:1fr;gap:var(--space-3);
+ list-style:none;margin:var(--space-4) 0 0;padding:0}
+.p-school-life .dest,
+.p-achievements .dest{padding:var(--space-3) var(--space-4);background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:8px}
+.p-school-life .res__cta,
+.p-achievements .res__cta{margin-top:var(--space-6)}
+.p-school-life .res__fig,
+.p-achievements .res__fig{margin:0}
+.p-school-life .res__fig .ph,
+.p-achievements .res__fig .ph{aspect-ratio:4/5;border-radius:12px;padding:var(--space-5)}
+.p-school-life .res__cap,
+.p-achievements .res__cap{margin-top:var(--space-3);font-size:var(--fs-xs);color:var(--text-muted)}
+
+/* ---------- Achievements: what parents say ----------
+ Placeholder state only. Dashed red borders and a SAMPLE badge on every card,
+ no photography beside an unwritten quote, and the whole band is removed
+ rather than shown empty if no real testimonial exists at launch. */
+.p-school-life .says,
+.p-achievements .says{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ list-style:none;margin:0;padding:0}
+.p-school-life .say,
+.p-achievements .say{padding:var(--space-5);background:var(--neutral-0);border-radius:12px;
+ border:2px dashed var(--accent-500)}
+.p-school-life .say__badge,
+.p-achievements .say__badge{display:inline-block;font-size:var(--fs-xs);font-weight:700;
+ letter-spacing:.04em;text-transform:uppercase;color:#5A3C06;
+ background:#FBE4BC;padding:4px 10px;border-radius:999px}
+.p-school-life .say__q,
+.p-achievements .say__q{margin-top:var(--space-4);font-size:var(--fs-lg)}
+.p-school-life .say__a,
+.p-achievements .say__a{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-4)}
+.p-school-life .say__av,
+.p-achievements .say__av{flex:none;width:36px;height:36px;border-radius:50%;
+ background:var(--neutral-200,#E0E0DE)}
+.p-school-life .say__r,
+.p-achievements .say__r{font-size:var(--fs-sm);color:var(--text-secondary)}
+.p-school-life .says__note,
+.p-achievements .says__note{margin-top:var(--space-5);font-size:var(--fs-xs);color:var(--text-secondary)}
+
+@media(min-width:720px){
+ .p-school-life .facs,
+.p-achievements .facs{grid-template-columns:repeat(2,1fr)}
+ .p-school-life .thru__strip,
+.p-achievements .thru__strip{grid-template-columns:repeat(4,1fr)}
+ .p-school-life .figs,
+.p-achievements .figs{grid-template-columns:repeat(2,1fr)}
+ .p-school-life .dests,
+.p-achievements .dests{grid-template-columns:repeat(2,1fr)}
+ .p-school-life .says,
+.p-achievements .says{grid-template-columns:repeat(3,1fr)}
+}
+/* Desktop column widths are the mockups' own, measured off the 1440 PNGs:
+   timeline content starts at x=349 (175 + 24 + 20 + 24 from a 106 margin);
+   facilities four-up at 283 wide; the year strip 708 wide (4 x 168 + 3 x 12);
+   Honour Roll photo 560, competitions photo 428, results photo 504. */
+@media(min-width:960px){
+ .p-school-life .sltl__i,
+.p-achievements .sltl__i{grid-template-columns:175px 20px 1fr;column-gap:var(--space-5)}
+ .p-school-life .sltl__i::before,
+.p-achievements .sltl__i::before{left:208px}
+ .p-school-life .sltl__dot,
+.p-achievements .sltl__dot{grid-column:2}
+ .p-school-life .sltl__c,
+.p-achievements .sltl__c{grid-column:3;grid-row:1}
+ .p-school-life .sltl__t,
+.p-achievements .sltl__t{grid-column:1;grid-row:1;margin-top:2px;margin-bottom:0}
+ .p-school-life .facs,
+.p-achievements .facs{grid-template-columns:repeat(4,1fr)}
+ .p-school-life .thru,
+.p-achievements .thru{grid-template-columns:minmax(0,1fr) minmax(0,708px);gap:var(--space-7)}
+ .p-school-life .hrsplit,
+.p-achievements .hrsplit{grid-template-columns:minmax(0,1fr) minmax(0,560px);gap:88px}
+ .p-school-life .hr__cols,
+.p-achievements .hr__cols{grid-template-columns:repeat(3,1fr);gap:var(--space-7)}
+ .p-school-life .comp,
+.p-achievements .comp{grid-template-columns:minmax(0,1fr) minmax(0,428px);gap:88px}
+ .p-school-life .res,
+.p-achievements .res{grid-template-columns:minmax(0,1fr) minmax(0,504px);gap:88px}
+ .p-school-life .dests,
+.p-achievements .dests{grid-template-columns:repeat(3,1fr)}
+}
+
+
+/* --- about.html --- */
+
+/* ===== ABOUT =====
+ Column widths are the mockup's own: hero photograph 591 wide, the values body
+ column starting at x=687, the statistic band on a 304 pitch, the pink band's
+ paragraph from x=591, four people portraits at 286.
+
+ The milestone timeline is a ridge on desktop and a vertical rail at 320px,
+ which is how the two mockups draw it. The ridge is decorative and carries
+ aria-hidden; the years and events beneath it are the content. */
+
+/* ---------- hero ---------- */
+.p-about .ahero{padding-top:var(--space-8);padding-bottom:var(--space-8)}
+.p-about .ahero h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:15ch}
+.p-about .ahero__p{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:46ch}
+.p-about .ahero__g{display:grid;grid-template-columns:1fr;gap:var(--space-7);align-items:start}
+.p-about .ahero__fig{margin:0}
+.p-about .ahero__fig .ph{aspect-ratio:4/3;border-radius:12px;padding:var(--space-6)}
+.p-about .ahero__cap{margin-top:var(--space-3);font-size:var(--fs-xs);color:var(--text-muted)}
+
+/* ---------- section nav ---------- */
+.p-about .snav{border-top:var(--bw) solid var(--border-default)}
+.p-about .snav ul{display:flex;gap:var(--space-6);list-style:none;margin:0;padding:0;
+ overflow-x:auto}
+.p-about .snav a[aria-current]{color:var(--ink-nav);font-weight:700}
+
+/* ---------- milestones ---------- */
+.p-about .ms__h{font-size:var(--fs-2xl);font-weight:700}
+.p-about .msridge{display:none}
+.p-about .ms{list-style:none;margin:var(--space-6) 0 0;padding:0}
+.p-about .ms__i{position:relative;display:grid;grid-template-columns:20px 1fr;
+ column-gap:var(--space-4);padding-bottom:var(--space-6)}
+.p-about .ms__i:last-child{padding-bottom:0}
+/* absolutely positioned so the rail crosses the stop's own bottom padding */
+.p-about .ms__i::before{content:"";position:absolute;left:9px;top:14px;bottom:0;width:2px;
+ background:var(--rail,#B2A9D6)}
+.p-about .ms__i:last-child::before{display:none}
+.p-about .ms__dot{grid-column:1;grid-row:1;align-self:start;justify-self:center;
+ width:14px;height:14px;margin-top:6px;border-radius:50%;background:var(--neutral-0);
+ border:2px solid var(--navy-700);position:relative;z-index:1}
+.p-about .ms__i--now .ms__dot{background:var(--navy-700)}
+.p-about .ms__y{grid-column:2;grid-row:1;font-size:var(--fs-lg);font-weight:700;
+ color:var(--ink-nav)}
+.p-about .ms__e{grid-column:2;grid-row:2;margin-top:var(--space-2);color:var(--text-secondary)}
+
+/* ---------- values, on navy ---------- */
+.p-about .vals{list-style:none;margin:var(--space-7) 0 0;padding:0;
+ border-top:1px solid rgba(255,255,255,.22)}
+.p-about .val{display:grid;grid-template-columns:1fr;gap:var(--space-3);
+ padding:var(--space-6) 0;border-bottom:1px solid rgba(255,255,255,.22)}
+.p-about .val__h{font-size:var(--fs-lg);font-weight:700;color:var(--neutral-0)}
+.p-about .val__p{margin:0;color:var(--brand-200)}
+.p-about .sec--inverse .rule{background:#DD827E}
+.p-about .sec--inverse .kicker{color:#B2A9D6}
+
+/* ---------- by the numbers ---------- */
+.p-about .nums{display:grid;grid-template-columns:repeat(2,1fr);list-style:none;
+ margin:var(--space-7) 0 0;padding:0}
+.p-about .num{padding:var(--space-2) 0 var(--space-2) var(--space-5);
+ border-left:1px solid var(--border-default)}
+.p-about .num__n{display:block;font-size:var(--fs-3xl);font-weight:700;line-height:1.05;
+ color:var(--accent-500)}
+.p-about .num__l{display:block;margin-top:var(--space-2);color:var(--text-secondary)}
+.p-about .nums__fine{margin-top:var(--space-5);font-size:var(--fs-xs);color:var(--text-muted)}
+
+/* ---------- why parents choose us, on rose ----------
+ .sec--alt and .sec--rose are in the shared shell; Achievements uses both. */
+.p-about .why2{display:grid;grid-template-columns:1fr;gap:var(--space-6);align-items:start}
+.p-about .why2__p{margin:0;font-size:var(--fs-xl);line-height:1.45}
+
+/* ---------- the people behind it ---------- */
+.p-about .ppl{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-5);
+ list-style:none;margin:var(--space-7) 0 0;padding:0}
+.p-about .ppl .ph{aspect-ratio:4/5;border-radius:12px;padding:var(--space-4)}
+.p-about .ppl__n{margin-top:var(--space-3);font-weight:700}
+.p-about .ppl__r{margin-top:var(--space-1);font-size:var(--fs-sm);color:var(--text-secondary)}
+
+@media(min-width:960px){
+ .p-about .ahero__g{grid-template-columns:minmax(0,1fr) minmax(0,591px);gap:88px}
+ .p-about .val{grid-template-columns:minmax(0,1fr) minmax(0,633px);gap:88px;
+  align-items:baseline}
+ .p-about .nums{grid-template-columns:repeat(4,1fr)}
+ .p-about .why2{grid-template-columns:minmax(0,397px) minmax(0,1fr);gap:88px}
+ .p-about .ppl{grid-template-columns:repeat(4,1fr)}
+ /* the ridge replaces the rail: five nodes, rising left to right */
+ .p-about .msridge{display:block;width:100%;height:auto;margin-top:var(--space-6)}
+ .p-about .ms{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:var(--space-4)}
+ .p-about .ms__i{display:block;padding:0 var(--space-3);text-align:center}
+ .p-about .ms__i::before,
+.p-about .ms__dot{display:none}
+ .p-about .ms__e{margin-top:var(--space-2)}
+}
+
+
+/* --- contact.html --- */
+
+/* ===== CONTACT =====
+ Four routes to a human, sized well above the 44x44 minimum because the
+ audience includes grandparents (C9). The phone is first and the form is last,
+ which is Item 5's deliberate inversion of the usual order.
+
+ Every curly-brace token is unwritten copy shown rather than hidden: the email
+ address and the school hours have never been supplied, and a contact page that
+ states hours the school does not keep is worse than one that omits them. */
+
+.p-contact .chero{padding-top:var(--space-8);
+ background-image:url("../img/levels-ridge-top-phone.svg");
+ background-repeat:no-repeat;background-position:right top;background-size:170px auto}
+.p-contact .chero h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:18ch}
+.p-contact .chero__lead{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:52ch}
+
+/* ---------- the four routes ---------- */
+.p-contact .routes4{display:grid;grid-template-columns:1fr;gap:var(--space-4);
+ list-style:none;margin:var(--space-7) 0 0;padding:0}
+.p-contact .rt{display:flex}
+.p-contact .rt__a{display:flex;flex-direction:column;width:100%;min-height:172px;
+ padding:var(--space-5);background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:12px;
+ text-decoration:none;color:inherit;
+ transition:border-color var(--dur-base) var(--ease),
+            box-shadow var(--dur-base) var(--ease)}
+.p-contact .rt__a:hover{border-color:var(--ink-nav);box-shadow:var(--shadow-sm)}
+.p-contact .rt__a:focus-visible{outline:var(--bw-focus) solid var(--border-focus);
+ outline-offset:3px}
+.p-contact .rt__i{color:var(--ink-nav)}
+.p-contact .rt__l{display:block;margin-top:var(--space-3);font-size:var(--fs-xs);
+ font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+ color:var(--text-secondary)}
+.p-contact .rt__v{display:block;margin-top:var(--space-2);font-size:var(--fs-xl);
+ font-weight:700;color:var(--ink-nav)}
+.p-contact .rt__n{display:block;margin-top:auto;padding-top:var(--space-4);
+ font-size:var(--fs-sm);color:var(--text-secondary)}
+/* the first route is the phone, and it is the one filled */
+.p-contact .rt--fill .rt__a{background:var(--navy-700);border-color:var(--navy-700)}
+.p-contact .rt--fill .rt__i,
+.p-contact .rt--fill .rt__v{color:var(--neutral-0)}
+.p-contact .rt--fill .rt__l,
+.p-contact .rt--fill .rt__n{color:var(--brand-200)}
+.p-contact .rt--fill .rt__a:hover{border-color:var(--neutral-0)}
+.p-contact .routes4__fine{margin-top:var(--space-5);color:var(--text-secondary)}
+
+/* the copy-left / form-right split is .fsplit in the shared shell — Careers
+   draws the same one */
+
+/* ---------- where to find us ---------- */
+.p-contact .locs{display:grid;grid-template-columns:1fr;gap:25px;list-style:none;
+ margin:var(--space-6) 0 0;padding:0}
+.p-contact .loc2{background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px;overflow:hidden}
+.p-contact .loc2 .camp__map{aspect-ratio:596/179}
+.p-contact .loc2__b{padding:var(--space-5)}
+.p-contact .loc2__n{font-size:var(--fs-lg);font-weight:700}
+.p-contact .loc2__ad{margin-top:var(--space-3);color:var(--text-secondary);font-style:normal}
+.p-contact .loc2__a{margin-top:var(--space-4)}
+.p-contact .locs__fine{margin-top:var(--space-5);color:var(--text-secondary)}
+
+@media(min-width:640px){
+ .p-contact .routes4{grid-template-columns:repeat(2,1fr)}
+ .p-contact .locs{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:960px){
+ .p-contact .routes4{grid-template-columns:repeat(4,1fr)}
+ .p-contact .rt__a{min-height:239px}
+}
+
+
+/* --- news.html --- */
+
+/* ===== NEWS & EVENTS =====
+ An index page. It asks the school for no new writing: the posts and the
+ photography already exist, and every {token} here is a CMS field rather than
+ copy somebody still has to write. The exceptions are the dates, which are on
+ the figures register and are the content most likely to be wrong and noticed.
+
+ Both empty states from Item 5 are in the markup carrying hidden, because an
+ index page with nothing in it is the state most likely to ship unhandled. */
+
+.p-news .nhero{padding-top:var(--space-8);padding-bottom:0;
+ background-image:url("../img/levels-ridge-top-phone.svg");
+ background-repeat:no-repeat;background-position:right top;background-size:170px auto}
+.p-news .nhero h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:16ch}
+.p-news .nhero__lead{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:50ch}
+
+.p-news .nlay{display:grid;grid-template-columns:1fr;gap:var(--space-7);align-items:start;
+ margin-top:var(--space-8)}
+
+/* ---------- post cards ---------- */
+.p-news .pgrid{display:grid;grid-template-columns:1fr;gap:25px;list-style:none;
+ margin:25px 0 0;padding:0}
+.p-news .pcard{display:flex;background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:12px;overflow:hidden}
+.p-news .pcard__a{display:flex;flex-direction:column;width:100%;
+ text-decoration:none;color:inherit;
+ transition:transform var(--dur-base) var(--ease),
+            box-shadow var(--dur-base) var(--ease)}
+.p-news .pcard__a:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.p-news .pcard__a:focus-visible{outline:var(--bw-focus) solid var(--border-focus);
+ outline-offset:3px}
+.p-news .pcard .ph{aspect-ratio:3/2;border-radius:0;padding:var(--space-4)}
+.p-news .pcard__b{display:block;padding:var(--space-5)}
+.p-news .pcard__m{display:block;font-size:var(--fs-xs);font-weight:700}
+.p-news .pcard__d{color:var(--text-secondary)}
+.p-news .pcard__c{color:var(--ink-nav)}
+.p-news .pcard__t{display:block;margin-top:var(--space-2);font-size:var(--fs-lg);
+ font-weight:700}
+.p-news .pcard__x{display:block;margin-top:var(--space-3);color:var(--text-secondary)}
+/* the newest post runs wide, thumbnail beside the copy */
+.p-news .pcard--lead{margin-bottom:0}
+.p-news .posts__after{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-5);
+ margin-top:var(--space-6)}
+.p-news .posts__after p{margin:0;color:var(--text-secondary)}
+
+/* ---------- term dates ---------- */
+.p-news .tcard{background:var(--neutral-50,#F8F8F7);border:1px solid var(--border-default);
+ border-radius:12px;padding:var(--space-6)}
+.p-news .terms{list-style:none;margin:var(--space-5) 0 0;padding:0;
+ border-top:1px solid var(--border-default)}
+.p-news .term{padding:var(--space-4) 0;border-bottom:1px solid var(--border-default)}
+.p-news .term__n{font-weight:700}
+.p-news .term__d{margin-top:var(--space-1);color:var(--text-secondary)}
+.p-news .tcard__h3{margin-top:var(--space-6);font-size:var(--fs-base);font-weight:700}
+.p-news .keys{list-style:none;margin:var(--space-3) 0 0;padding:0}
+.p-news .key{display:grid;grid-template-columns:92px 1fr;gap:var(--space-4);
+ align-items:baseline;padding:var(--space-3) 0;
+ border-bottom:1px solid var(--border-default)}
+.p-news .tcard__p{margin-top:var(--space-5);color:var(--text-secondary)}
+.p-news .tcard__fine{margin-top:var(--space-2);font-size:var(--fs-xs);color:var(--text-muted)}
+.p-news .tcard__ics{margin-top:var(--space-5)}
+
+/* ---------- album teasers ---------- */
+.p-news .albums{display:grid;grid-template-columns:1fr;gap:25px;list-style:none;
+ margin:var(--space-6) 0 0;padding:0}
+/* .album card lives in the shared shell — Gallery uses it too */
+
+@media(min-width:640px){
+ .p-news .pgrid{grid-template-columns:repeat(2,1fr)}
+ .p-news .pcard--lead{grid-column:1 / -1}
+ .p-news .albums{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:960px){
+ .p-news .nlay{grid-template-columns:minmax(0,727px) minmax(0,441px);gap:48px}
+ .p-news .albums{grid-template-columns:repeat(4,1fr)}
+ /* the lead post lays its thumbnail beside the copy, 368 of 727 */
+ .p-news .pcard--lead .pcard__a{flex-direction:row;align-items:stretch;min-height:233px}
+ .p-news .pcard--lead .ph{flex:none;width:368px;aspect-ratio:auto}
+ .p-news .pcard--lead .pcard__b{flex:1;align-self:center}
+}
+
+
+/* --- careers.html --- */
+
+/* ===== CAREERS =====
+ The one page on the site whose audience is an adult looking at adults. Item 4's
+ pillar for them: you are deciding whether these are colleagues worth having —
+ so the page leads with the people and reaches the vacancy second.
+
+ Every photograph here needs STAFF media consent, which A10 does not cover
+ (F50). That is sharper on this page than anywhere else, because the subjects
+ are staff by definition. */
+
+.p-careers .chero2{padding-top:var(--space-8)}
+.p-careers .chero2__g{display:grid;grid-template-columns:1fr;gap:var(--space-7);
+ align-items:center}
+.p-careers .chero2 h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:16ch}
+.p-careers .chero2__p{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:46ch}
+.p-careers .chero2__p2{margin-top:var(--space-4);color:var(--text-secondary);max-width:52ch}
+.p-careers .chero2__cta{margin-top:var(--space-6)}
+.p-careers .chero2__fig{margin:0}
+.p-careers .chero2__fig .ph{aspect-ratio:4/3;border-radius:12px;padding:var(--space-6)}
+
+/* ---------- current openings ----------
+ The empty state is the designed state. RULE 5.2: empty states are conversion
+ copy, and a teacher who looked and found nothing is exactly the person worth
+ capturing. */
+.p-careers .vac__empty{display:grid;grid-template-columns:1fr;gap:var(--space-5);
+ align-items:center;margin-top:var(--space-6);padding:var(--space-6);
+ background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px}
+.p-careers .vac__empty p{margin:0;font-size:var(--fs-lg)}
+.p-careers .vac__after{margin-top:var(--space-5);color:var(--text-secondary)}
+.p-careers .vacs{list-style:none;margin:var(--space-6) 0 0;padding:0}
+.p-careers .vac{padding:var(--space-5);margin-bottom:var(--space-4);background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:12px}
+.p-careers .vac__t{font-size:var(--fs-lg);font-weight:700}
+.p-careers .vac__m{margin-top:var(--space-2);font-size:var(--fs-sm);color:var(--text-secondary)}
+.p-careers .vac__b{margin-top:var(--space-3);color:var(--text-secondary)}
+.p-careers .vac__a{margin-top:var(--space-4)}
+
+/* ---------- what we look for ---------- */
+.p-careers .look__p{margin-top:var(--space-4);font-size:var(--fs-lg)}
+.p-careers .look__p b{color:var(--ink-nav)}
+.p-careers .look__h3{margin-top:var(--space-6);font-size:var(--fs-lg);font-weight:700}
+.p-careers .look__p2{margin-top:var(--space-3);color:var(--text-secondary)}
+.p-careers .look__mail{display:flex;align-items:center;gap:var(--space-2);
+ margin-top:var(--space-5)}
+.p-careers .look__mail .ico{color:var(--ink-nav);flex:none}
+/* the CV upload is the only file input on the site */
+.p-careers .field input[type=file]{width:100%;margin-top:var(--space-2);min-height:var(--target);
+ padding:var(--space-3) var(--space-4);font:inherit;font-size:var(--fs-sm);
+ background:var(--neutral-50,#F8F8F7);border:1px dashed var(--neutral-450);
+ border-radius:8px}
+.p-careers .field input[type=file]:focus-visible{outline:var(--bw-focus) solid
+ var(--border-focus);outline-offset:2px}
+
+/* ---------- the people you would be joining ---------- */
+.p-careers .cols{display:grid;grid-template-columns:repeat(2,1fr);gap:25px;list-style:none;
+ margin:var(--space-6) 0 0;padding:0}
+.p-careers .cols .ph{aspect-ratio:4/5;border-radius:12px;padding:var(--space-4)}
+.p-careers .cols__n{margin-top:var(--space-3);font-weight:700}
+.p-careers .cols__r{margin-top:var(--space-1);font-size:var(--fs-sm);color:var(--text-secondary)}
+.p-careers .join__acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-5)}
+
+@media(min-width:640px){
+ .p-careers .vac__empty{grid-template-columns:minmax(0,1fr) auto}
+}
+@media(min-width:960px){
+ .p-careers .chero2__g{grid-template-columns:minmax(0,568px) minmax(0,560px);gap:88px}
+ .p-careers .cols{grid-template-columns:repeat(4,1fr)}
+}
+
+
+/* --- gallery.html --- */
+
+/* ===== GALLERY =====
+ The heaviest page on the site by a wide margin, read on mobile data of
+ variable quality that the client confirmed rather than us assuming. Covers
+ only: every cover is a link to an album, not a lightbox, and the album
+ interior loads its own images when it is opened. Lazy-loading here is
+ mandatory, not advisory. */
+
+.p-gallery .ghero{padding-top:var(--space-8);
+ background-image:url("../img/levels-ridge-top-phone.svg");
+ background-repeat:no-repeat;background-position:right top;background-size:170px auto}
+.p-gallery .ghero h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:15ch}
+.p-gallery .ghero__lead{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:46ch}
+
+.p-gallery .albums3{display:grid;grid-template-columns:1fr;gap:26px;list-style:none;
+ margin:var(--space-8) 0 0;padding:0}
+/* the cover carries a count, which is the one thing a parent uses to decide
+   whether an album is worth opening on a metered connection */
+.p-gallery .alb__pic{position:relative;display:block}
+.p-gallery .alb__pill{position:absolute;right:var(--space-4);bottom:var(--space-4);
+ display:inline-block;padding:4px 10px;font-size:var(--fs-xs);font-weight:700;
+ color:var(--ink-nav);background:var(--neutral-0);border-radius:999px}
+.p-gallery .albums__after{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-5);
+ margin-top:var(--space-6)}
+.p-gallery .albums__after p{margin:0;color:var(--text-secondary)}
+
+.p-gallery .gposts{display:grid;grid-template-columns:1fr;gap:26px;list-style:none;
+ margin:var(--space-6) 0 0;padding:0}
+.p-gallery .gpost .ph{aspect-ratio:3/2;border-radius:0;padding:var(--space-4)}
+.p-gallery .gpost__b{display:block;padding:var(--space-5)}
+.p-gallery .gpost__d{display:block;font-size:var(--fs-xs);font-weight:700;
+ color:var(--text-secondary)}
+.p-gallery .gpost__t{display:block;margin-top:var(--space-2);font-size:var(--fs-lg);
+ font-weight:700}
+
+@media(min-width:640px){
+ .p-gallery .albums3{grid-template-columns:repeat(2,1fr)}
+ .p-gallery .gposts{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:960px){
+ .p-gallery .albums3{grid-template-columns:repeat(3,1fr)}
+ .p-gallery .gposts{grid-template-columns:repeat(3,1fr)}
+}
+
+
+/* --- campuses.html --- */
+
+/* ===== OUR CAMPUSES =====
+ A genuine search target: people type "mountain crest school address". Written
+ to be found, not only navigated to, which is why both street names are in the
+ meta description.
+
+ The level picker runs on radios and :has(), with no script at all. Item 5's
+ no-JS default — all campuses shown, selector hidden — is the @supports
+ fallback, so the addresses survive on any engine. */
+
+.p-campuses .mhero{padding-top:var(--space-8);
+ background-image:url("../img/levels-ridge-top-phone.svg");
+ background-repeat:no-repeat;background-position:right top;background-size:170px auto}
+.p-campuses .mhero h1{margin-top:var(--space-2);font-size:clamp(1.9rem,1.3rem + 2.6vw,3rem);
+ line-height:1.1;max-width:15ch}
+.p-campuses .mhero__lead{margin-top:var(--space-5);font-size:var(--fs-lg);
+ color:var(--text-secondary);max-width:48ch}
+
+.p-campuses .pick{display:grid;grid-template-columns:1fr;gap:var(--space-6);align-items:start;
+ margin-top:var(--space-8)}
+.p-campuses .pick__f{border:0;margin:0;padding:0}
+.p-campuses .pick__lg{padding:0;font-size:var(--fs-lg);font-weight:700}
+.p-campuses .pick__o{margin:0 0 10px}
+.p-campuses .pick__o:last-child{margin-bottom:0}
+.p-campuses .pick__o label{display:flex;align-items:center;justify-content:space-between;
+ gap:var(--space-3);min-height:56px;padding:0 var(--space-5);font-weight:700;
+ color:var(--ink-nav);background:var(--neutral-0);
+ border:1px solid var(--border-default);border-radius:10px;cursor:pointer}
+.p-campuses .pick__o label:hover{border-color:var(--ink-nav)}
+.p-campuses .pick__o input:checked + label{color:var(--neutral-0);background:var(--navy-700);
+ border-color:var(--navy-700)}
+.p-campuses .pick__o input:focus-visible + label{outline:var(--bw-focus) solid
+ var(--border-focus);outline-offset:3px}
+.p-campuses .pick__tick{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;
+ stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;visibility:hidden}
+.p-campuses .pick__o input:checked + label .pick__tick{visibility:visible}
+.p-campuses .pick__note{margin-top:var(--space-5);font-size:var(--fs-sm);
+ color:var(--text-secondary)}
+.p-campuses .cc{background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px;overflow:hidden}
+.p-campuses .cc__map{position:relative;min-height:200px}
+.p-campuses .cc__b{padding:var(--space-6)}
+.p-campuses .cc__h{margin-top:var(--space-2);font-size:var(--fs-xl);font-weight:700}
+.p-campuses .cc__p{margin-top:var(--space-3);color:var(--text-secondary)}
+.p-campuses .cc__a{margin-top:var(--space-5)}
+/* only the chosen level's campus is shown; all three are in the DOM */
+.p-campuses .pick__r > .cc{display:none}
+.p-campuses .pick:has(#lv-ey:checked) .cc--ey,
+.p-campuses .pick:has(#lv-gs:checked) .cc--gs,
+.p-campuses .pick:has(#lv-hs:checked) .cc--hs{display:block}
+@supports not (selector(:has(*))){
+ .p-campuses .pick__f,
+.p-campuses .pick__note{display:none}
+ .p-campuses .pick__r > .cc{display:block;margin-bottom:var(--space-5)}
+}
+
+/* ---------- where they are ---------- */
+.p-campuses .ccs{display:grid;grid-template-columns:1fr;gap:27px;list-style:none;
+ margin:var(--space-6) 0 0;padding:0}
+.p-campuses .cc2{background:var(--neutral-0);border:1px solid var(--border-default);
+ border-radius:12px;overflow:hidden}
+.p-campuses .cc2 .ph{aspect-ratio:16/9;border-radius:0;padding:var(--space-4)}
+.p-campuses .cc2__b{padding:var(--space-6)}
+.p-campuses .cc2__h{font-size:var(--fs-xl);font-weight:700}
+.p-campuses .cc2__ad{margin-top:var(--space-3);color:var(--text-secondary);font-style:normal}
+.p-campuses .cc2__a{margin-top:var(--space-5)}
+.p-campuses .ccs__fine{margin-top:var(--space-5);color:var(--text-secondary)}
+
+/* ---------- closing: this page draws it differently ---------- */
+.p-campuses .talk2{display:grid;grid-template-columns:1fr;gap:var(--space-6);align-items:start}
+.p-campuses .talk2__acts{display:grid;gap:var(--space-4)}
+.p-campuses .talk2__two{display:grid;grid-template-columns:1fr;gap:var(--space-4)}
+.p-campuses .talk2__n{margin-top:var(--space-4);font-size:var(--fs-xs);color:var(--text-muted)}
+
+@media(min-width:640px){
+ .p-campuses .ccs{grid-template-columns:repeat(2,1fr)}
+ .p-campuses .talk2__two{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:960px){
+ .p-campuses .pick{grid-template-columns:minmax(0,425px) minmax(0,720px);gap:70px}
+ .p-campuses .cc{display:grid;grid-template-columns:352px minmax(0,1fr)}
+ .p-campuses .pick:has(#lv-ey:checked) .cc--ey,
+.p-campuses .pick:has(#lv-gs:checked) .cc--gs,
+.p-campuses .pick:has(#lv-hs:checked) .cc--hs{display:grid}
+ .p-campuses .talk2{grid-template-columns:minmax(0,488px) minmax(0,639px);gap:88px}
+}
+
